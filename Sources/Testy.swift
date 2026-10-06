@@ -78,6 +78,57 @@ func runSelfTest() -> Bool {
         vysledek("pamlsky: dopadnou až na Dock a jen nad Dockem", !zmizelVeVzduchu && !mimo)
     }
 
+    // 3b) pamlsek zmizí až potom, co Julie skloní hlavu (ne dřív)
+    do {
+        let (pet, fx, env) = novy()
+        fx.treatRange = (env.dockL + 20)...(env.dockR - 20)
+        naZemi(pet, env)
+        pet.dropTreat(at: pet.pos.x + 200, fromY: env.floorY + 300)
+        pet.setAct(.sausage, 999)
+        var dole: CGFloat = 0          // jak dlouho má hlavu dole
+        var dobaPredSnezenim: CGFloat = -1
+        var t: CGFloat = 0
+        while t < 15 && dobaPredSnezenim < 0 {
+            let bylo = fx.sausages.count
+            Pet.step(pet, fx, 1.0 / 60, nikde, floorY: env.floorY); t += 1.0 / 60
+            if fx.sausages.count < bylo { dobaPredSnezenim = dole }
+            dole = pet.buildPose().frame == "cuch" ? dole + 1.0 / 60 : 0
+        }
+        vysledek("pamlsek: zmizí až po sklopení hlavy", dobaPredSnezenim >= 0.3, String(format: "hlava dole %.2f s předtím", dobaPredSnezenim))
+    }
+
+    // 3c) dosáhne i na pamlsky na krajích Docku a nepřečnívá přes ně (velikosti z nabídky)
+    for velikost in [56.0, 80.0, 110.0, 150.0] {
+        var snedla = 0
+        var precniva: CGFloat = 0
+        for kraj in [-1.0, 1.0] as [CGFloat] {
+            let (pet, fx, env) = novy()
+            pet.cfg.size = velikost
+            pet.pixel = max(2, (CGFloat(velikost) / 38).rounded()); fx.px = pet.pixel
+            fx.treatRange = (env.dockL + 20)...(env.dockR - 20)
+            let okraj = kraj < 0 ? env.dockL : env.dockR
+            naZemi(pet, env, x: okraj - kraj * 300)
+            pet.dropTreat(at: okraj, fromY: env.floorY + 200)
+            pet.setAct(.sausage, 999)
+            var t: CGFloat = 0
+            while t < 20 && !fx.sausages.isEmpty {
+                Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30
+                let pul = pet.half * pet.pixel
+                precniva = max(precniva, env.dockL - (pet.pos.x - pul), (pet.pos.x + pul) - env.dockR)
+            }
+            if fx.sausages.isEmpty && pet.act != .sit { snedla += 1 }    // .sit = po 25 s by je uklidila
+            // pak dojde až na kraj Docku: čumák ani ocas nesmí přečnívat
+            pet.setAct(.walk, 30); pet.walkDir = kraj
+            for _ in 0..<(30 * 6) {
+                Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY)
+                let pul = pet.half * pet.pixel
+                precniva = max(precniva, env.dockL - (pet.pos.x - pul), (pet.pos.x + pul) - env.dockR)
+            }
+        }
+        vysledek("pamlsky na krajích Docku (velikost \(Int(velikost)))", snedla == 2 && precniva <= 0.5,
+                 String(format: "snědla %d ze 2, přečnívá %.1f b.", snedla, precniva))
+    }
+
     // 4) míček: přinese ho pod kurzor
     do {
         let (pet, fx, env) = novy()

@@ -8,15 +8,20 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 (stačí Command Line Tools). Julie nemluví, nemá bubliny. Nabídka je v pěti jazycích
 (čeština, angličtina, němčina, slovenština, polština; podle systému, přepnout v Nastavení).
 
+**[Stáhnout Julii pro Mac (DMG, 0,9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.dmg)**
+· [všechna vydání](https://github.com/hlaska18/Julie/releases)
+
 ## Instalace (pro ostatní)
-1. Stáhni **Julie-1.0.dmg**, otevři ho a přetáhni **Julie** do **Aplikací**.
+1. Stáhni **[Julie-1.0.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.dmg)**, otevři ho a přetáhni **Julie** do **Aplikací**.
 2. Otevři Julii. Aplikace není notarizovaná u Applu, macOS proto napíše, že nemůže ověřit vývojáře:
    **Nastavení systému → Soukromí a zabezpečení** → dole **Přesto otevřít**
    (nebo v Terminálu `xattr -dr com.apple.quarantine /Applications/Julie.app`).
 3. Úvodní okno ukáže ovládání a nabídne spouštění po přihlášení.
 
 Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0` → `dist/Julie-1.0.dmg` a `.zip`
-(univerzální aplikace; před zabalením proběhne samotest). Soukromí: bez sítě, nic nesbírá
+(univerzální aplikace; před zabalením proběhne samotest). Při novém vydání přepiš číslo verze
+v odkazech ke stažení v obou README (odkaz `releases/latest/download/` hledá soubor podle jména).
+Soukromí: bez sítě, nic nesbírá
 (podrobně v anglickém README).
 
 ## Sestavení a spuštění

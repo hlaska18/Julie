@@ -10,6 +10,9 @@ on top of your Dock. She is modelled on a real dog called Julie. Inspired by
 
 She never talks – no speech bubbles, just a dog being a dog.
 
+**[Download Julie for Mac (DMG, 0.9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.dmg)**
+· [all releases](https://github.com/hlaska18/Julie/releases)
+
 ## What she does
 - walks along the top edge of the Dock (and never past its ends), sniffs, sits, lies down,
   scratches, stretches, barks (little pixel sound waves)
@@ -32,7 +35,7 @@ until you turn her on again), surprises, settings, language and a short how-to.
 Languages: English, Čeština, Deutsch, Slovenčina, Polski (follows your system language).
 
 ## Install
-1. Download **Julie-1.0.dmg**, open it and drag **Julie** to **Applications**.
+1. Download **[Julie-1.0.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.dmg)**, open it and drag **Julie** to **Applications**.
 2. Open Julie. Because the app is not notarized by Apple, macOS will say it cannot verify the developer.
    Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**
    (or, in Terminal: `xattr -dr com.apple.quarantine /Applications/Julie.app`).

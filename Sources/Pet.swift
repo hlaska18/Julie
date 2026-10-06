@@ -63,7 +63,8 @@ final class Pet {
     var forceFacing: CGFloat?           // jen pro zkoušku: směr po vynoření
     var treatsToDrop = 0
     var treatDropT: CGFloat = 0
-    var eatT: CGFloat = 0
+    var eatT: CGFloat = 0               // jak dlouho ještě jí (hlava dole)
+    var eatTarget: Sausage?             // pamlsek, nad kterým má sklopenou hlavu (zmizí, až je hlava dole)
     var treatMoving = false
     var heartT: CGFloat = 0
     var bedUntilClick = false
@@ -153,7 +154,9 @@ final class Pet {
 
     func bounds() -> (CGFloat, CGFloat) {
         if surfaceId == 0 {
-            let lo = env.dockL + 70 * s, hi = env.dockR - 70 * s
+            // celá Julie (i čumák a ocas) zůstane nad Dockem – i u malé velikosti, kde má pixel aspoň 2 body
+            let m = max(70 * s, (half + 3) * pixel)
+            let lo = env.dockL + m, hi = env.dockR - m
             return lo > hi ? ((lo + hi) / 2, (lo + hi) / 2) : (lo, hi)
         }
         if let w = env.window(surfaceId) { return (w.frame.minX + 22 * s, w.frame.maxX - 22 * s) }
@@ -169,6 +172,7 @@ final class Pet {
         squirrelPhase = 0
         didTeleport = false
         if a != .toBed { bedJumpT = -1; bedPrepT = -1 }
+        if a != .sausage { eatT = 0; eatTarget = nil }
         if a == .dig { holeX = pos.x; actDur = 999; burrowPhase = 0; burrowT = 0; burrowOff = .zero; burrowRot = 0 }
     }
 
@@ -546,6 +550,9 @@ final class Pet {
         fx.dropSausage(x: min(hi, max(lo, x)), y: min(y, env.ceilY), size: 100 * s)
     }
 
+    static let headDownTime: CGFloat = 0.4    // hlava dole, pamlsek ještě leží
+    static let chewTime: CGFloat = 0.45       // pamlsek je v puse, žvýká
+
     private func sausageLogic(_ dt: CGFloat, _ inp: Input) {
         let t = actT
         let floor = surfaceTop() ?? env.floorY
@@ -558,7 +565,15 @@ final class Pet {
             }
         }
         treatMoving = false
-        if eatT > 0 { eatT -= dt; return }
+        if eatT > 0 {
+            eatT -= dt
+            // nejdřív skloní hlavu k pamlsku, teprve pak ho vezme (a chvíli žvýká se sklopenou hlavou)
+            if let b = eatTarget, eatT <= Pet.chewTime {
+                if fx.sausages.contains(where: { $0 === b }) { fx.eat(b); qv -= 1.5 }
+                eatTarget = nil
+            }
+            return
+        }
         // nejbližší pamlsek (ležící má přednost před padajícím)
         var best: Sausage?
         var bestScore = CGFloat.infinity
@@ -573,13 +588,14 @@ final class Pet {
         let side: CGFloat = b.pos.x > pos.x ? 1 : -1
         let (lo, hi) = bounds()
         let targetX = min(hi, max(lo, b.pos.x - side * (half - 3) * pixel))
-        let mouthX = pos.x + side * (half - 1) * pixel
+        // pamlsek před ní (v pixelech obrázku): čenich sklopené hlavy je asi 12–21 px před středem
+        let ahead = (b.pos.x - pos.x) * side / pixel
         let low = b.pos.y < floor + DogRenderer.standHeight * 0.9 * pixel
-        if abs(b.pos.x - mouthX) < 9 * pixel && low && b.landed {
+        if ahead >= half - 10 && ahead <= half && low && b.landed {
             facing = side
-            fx.eat(b)
-            eatT = 0.5
-            qv -= 1.5
+            speedNow = 0                         // u pamlsku se zastaví hned, nedojíždí přes něj
+            eatTarget = b
+            eatT = Pet.headDownTime + Pet.chewTime
             return
         }
         if abs(targetX - pos.x) > 3 * pixel {
@@ -1546,7 +1562,10 @@ final class Pet {
                 }
                 return "stoji"
             }
-            if act == .sausage { return eatT > 0 ? "cuch" : "sedi" }
+            if act == .sausage {
+                if eatT > 0 && eatTarget == nil { p.squash = abs(sin(clock * 16)) * 0.03 }   // žvýká
+                return eatT > 0 ? "cuch" : "sedi"
+            }
             if act == .follow { return "sedi" }
             return "stoji"
         case .sit, .meteor: return "sedi"
