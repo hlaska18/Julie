@@ -55,27 +55,38 @@ func runSelfTest() -> Bool {
         vysledek("padáček: otevře se a přistane", mel && pet.mode == .ground, String(format: "%.1f s", t))
     }
 
-    // 3) pamlsky dopadnou na Dock, nemizí ve vzduchu
-    do {
+    // 3) déšť pamlsků: po celém Docku, dopadnou na Dock, nemizí ve vzduchu, Julie sní všechny
+    for rychlost in [1.0, 0.3] {
         let (pet, fx, env) = novy()
+        pet.cfg.walkSpeed = rychlost
         fx.treatRange = (env.dockL + 20)...(env.dockR - 20)
         naZemi(pet, env)
         pet.rainTreats()
         var naposled: [ObjectIdentifier: Bool] = [:]
+        var dopadly: [ObjectIdentifier: CGFloat] = [:]
         var zmizelVeVzduchu = false
         var mimo = false
-        for _ in 0..<(60 * 30) {
-            Pet.step(pet, fx, 1.0 / 60, nikde, floorY: env.floorY)
+        var snedla = 0
+        var t: CGFloat = 0
+        while t < 70 {
+            Pet.step(pet, fx, 1.0 / 60, nikde, floorY: env.floorY); t += 1.0 / 60
             let ted = Set(fx.sausages.map { ObjectIdentifier($0) })
-            for (id, lezel) in naposled where !ted.contains(id) && !lezel { zmizelVeVzduchu = true }
+            for (id, lezel) in naposled where !ted.contains(id) {
+                if lezel { snedla += 1 } else { zmizelVeVzduchu = true }
+            }
             naposled = [:]
             for sa in fx.sausages {
                 naposled[ObjectIdentifier(sa)] = sa.landed
+                if sa.landed && dopadly[ObjectIdentifier(sa)] == nil { dopadly[ObjectIdentifier(sa)] = sa.pos.x }
                 if sa.pos.x < env.dockL + 19 || sa.pos.x > env.dockR - 19 { mimo = true }
             }
             if pet.act != .sausage && fx.sausages.isEmpty { break }
         }
-        vysledek("pamlsky: dopadnou až na Dock a jen nad Dockem", !zmizelVeVzduchu && !mimo)
+        let xs = dopadly.values
+        let rozptyl = ((xs.max() ?? 0) - (xs.min() ?? 0)) / (env.dockR - env.dockL)
+        vysledek("déšť pamlsků po celém Docku (rychlost \(rychlost))",
+                 !zmizelVeVzduchu && !mimo && snedla == 6 && pet.act != .sit && rozptyl > 0.6,
+                 String(format: "snědla %d z 6 za %.0f s, rozptyl %.0f %% Docku", snedla, t, rozptyl * 100))
     }
 
     // 3b) pamlsek zmizí až potom, co Julie skloní hlavu (ne dřív)

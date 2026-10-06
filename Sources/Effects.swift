@@ -672,9 +672,9 @@ final class Effects {
                 if s.pos.y <= rest { s.pos.y = rest; s.vel = .zero; s.landed = true }
             }
             s.layer.position = CGPoint(x: (s.pos.x / px).rounded() * px, y: (s.pos.y / px).rounded() * px)
-            if s.age > 30 { s.layer.removeFromSuperlayer() }
+            if s.age > 60 { s.layer.removeFromSuperlayer() }
         }
-        sausages.removeAll { $0.age > 30 }
+        sausages.removeAll { $0.age > 60 }
     }
 
     /// Děje se v efektech něco, co potřebuje plynulý pohyb? (letící hroudy, padající pamlsky)

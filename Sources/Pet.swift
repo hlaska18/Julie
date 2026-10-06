@@ -63,6 +63,7 @@ final class Pet {
     var forceFacing: CGFloat?           // jen pro zkoušku: směr po vynoření
     var treatsToDrop = 0
     var treatDropT: CGFloat = 0
+    var treatXs: [CGFloat] = []          // kam spadnou další pamlsky z deště
     var eatT: CGFloat = 0               // jak dlouho ještě jí (hlava dole)
     var eatTarget: Sausage?             // pamlsek, nad kterým má sklopenou hlavu (zmizí, až je hlava dole)
     var treatMoving = false
@@ -233,7 +234,7 @@ final class Pet {
         case .walk: return base
         case .follow: return base * 1.9
         case .squirrel: return sprinting ? 330 * s : 0
-        case .sausage: return treatMoving ? base * 2.4 : 0
+        case .sausage: return treatMoving ? max(base * 2.4, 110 * s) : 0   // pro pamlsek spěchá i večer
         case .toBed: return toBedMoving ? max(base * 2, 90 * s) : 0
         case .fetch: return fetchMoving ? max(base * 2.4, 100 * s) : 0
         case .fetchBall: return ballMoving ? (ballPhase == 0 ? max(base * 2.6, 140 * s) : max(base * 1.6, 70 * s)) : 0
@@ -561,7 +562,7 @@ final class Pet {
             if treatDropT <= 0 {
                 treatDropT = 0.5
                 treatsToDrop -= 1
-                dropTreat(at: pos.x + CGFloat.random(in: -320...320) * s, fromY: env.ceilY)
+                dropTreat(at: treatXs.popLast() ?? CGFloat.random(in: env.dockL...max(env.dockL, env.dockR)), fromY: env.ceilY)
             }
         }
         treatMoving = false
@@ -604,7 +605,7 @@ final class Pet {
         } else {
             facing = side
         }
-        if t > 25 { fx.clearSausages(); setAct(.sit, 1) }
+        if t > 60 { fx.clearSausages(); setAct(.sit, 1) }
     }
 
     /// Veverka: zahlédne ji, ztuhne, štěkne a vystartuje plným sprintem (bez ohledu na nastavenou
@@ -1113,6 +1114,10 @@ final class Pet {
         setAct(.sausage, 999)
         treatsToDrop = 6
         treatDropT = 0
+        // po celém Docku: každý pamlsek do jiného úseku, na náhodné místo v něm, v náhodném pořadí
+        let lo = env.dockL + 20 * s, hi = max(lo, env.dockR - 20 * s)
+        let w = (hi - lo) / CGFloat(treatsToDrop)
+        treatXs = (0..<treatsToDrop).map { lo + w * (CGFloat($0) + CGFloat.random(in: 0.1...0.9)) }.shuffled()
     }
 
     /// Pamlsek z menu: spadne z místa kurzoru a Julie si pro něj doběhne.
