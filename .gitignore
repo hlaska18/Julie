@@ -16,3 +16,6 @@ art/pelisek/seda[123]_pix.png
 art/detailni/
 .DS_Store
 **/.DS_Store
+
+# zaloha stare historie (nikdy nepublikovat)
+*.bundle

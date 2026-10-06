@@ -1021,6 +1021,9 @@ if args.count >= 3 && args[1] == "--nora" {
     renderBurrow(to: args[2])
     exit(0)
 }
+if args.count >= 4 && args[1] == "--ukazka" {
+    exit(natocUkazku(args[2], do: args[3]) ? 0 : 1)
+}
 if args.count >= 3 && args[1] == "--sheet" {
     renderSheet(to: args[2])
     exit(0)
