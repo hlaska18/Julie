@@ -1,13 +1,17 @@
 #!/bin/sh
 # Vydání pro ostatní: univerzální aplikace (Apple Silicon + Intel), macOS 12+, zabalená jako ZIP a DMG.
 # Výsledek: dist/Julie-<verze>.zip a dist/Julie-<verze>.dmg
+# Sestavuje se v dočasné složce mimo Plochu: iCloud přidává k souborům metadata
+# („Finder information“) a s nimi codesign aplikaci nepodepíše.
 set -e
 cd "$(dirname "$0")"
 VERZE="${1:-1.0}"
-OUT="dist"
+DIST="dist"
+OUT="$(mktemp -d)"
+trap 'rm -rf "$OUT"' EXIT
 APP="$OUT/Julie.app"
-rm -rf "$OUT"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/sprity" "$OUT/tmp"
+rm -rf "$DIST"
+mkdir -p "$DIST" "$APP/Contents/MacOS" "$APP/Contents/Resources/sprity" "$OUT/tmp"
 for ARCH in arm64 x86_64; do
   swiftc -O -swift-version 5 -target "$ARCH-apple-macos12.0" -framework Cocoa -framework QuartzCore -framework Carbon \
     Sources/*.swift -o "$OUT/tmp/Julie-$ARCH"
@@ -54,11 +58,20 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <key>CFBundleLocalizations</key><array><string>cs</string><string>en</string><string>de</string><string>sk</string><string>pl</string></array>
 </dict></plist>
 PLIST
-codesign -s - --force "$APP" >/dev/null 2>&1 || true
+# podpis bez vývojářského účtu (ad hoc): bez něj macOS staženou aplikaci hlásí jako poškozenou
+xattr -cr "$APP"
+codesign -s - --force "$APP" || { echo "Podpis selhal – nevydávám."; exit 1; }
+codesign --verify --strict "$APP" || { echo "Podpis nesedí – nevydávám."; exit 1; }
 "$APP/Contents/MacOS/Julie" --test >/dev/null || { echo "Samotest neprošel – nevydávám."; exit 1; }
 ( cd "$OUT" && ditto -c -k --keepParent Julie.app "Julie-$VERZE.zip" )
 DMGDIR="$OUT/dmg"; mkdir -p "$DMGDIR"; ditto "$APP" "$DMGDIR/Julie.app"; ln -s /Applications "$DMGDIR/Applications"
-hdiutil create -volname "Julie" -srcfolder "$DMGDIR" -ov -format UDZO "$OUT/Julie-$VERZE.dmg" >/dev/null
-rm -rf "$DMGDIR"
+hdiutil create -volname "Julie" -srcfolder "$DMGDIR" -ov -format UDZO "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
+# kontrola hotového DMG: aplikace v něm musí být podepsaná
+MNT="$OUT/mnt"; mkdir -p "$MNT"
+hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
+codesign --verify --strict "$MNT/Julie.app" || { hdiutil detach "$MNT" >/dev/null 2>&1; echo "Aplikace v DMG není podepsaná – nevydávám."; exit 1; }
+hdiutil detach "$MNT" >/dev/null 2>&1
+cp "$OUT/Julie-$VERZE.zip" "$OUT/Julie-$VERZE.dmg" "$DIST/"
 lipo -info "$APP/Contents/MacOS/Julie"
-ls -lh "$OUT"
+echo "Podpis: ad hoc, ověřený (i v DMG)."
+ls -lh "$DIST"
