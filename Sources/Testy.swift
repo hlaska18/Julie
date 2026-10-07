@@ -63,6 +63,7 @@ func runSelfTest() -> Bool {
         naZemi(pet, env)
         pet.rainTreats()
         var naposled: [ObjectIdentifier: Bool] = [:]
+        var drzene: [Sausage] = []       // podržet: snědený pamlsek by jinak uvolnil adresu a nový by dostal stejné ObjectIdentifier
         var dopadly: [ObjectIdentifier: CGFloat] = [:]
         var zmizelVeVzduchu = false
         var mimo = false
@@ -76,6 +77,7 @@ func runSelfTest() -> Bool {
             }
             naposled = [:]
             for sa in fx.sausages {
+                if !drzene.contains(where: { $0 === sa }) { drzene.append(sa) }
                 naposled[ObjectIdentifier(sa)] = sa.landed
                 if sa.landed && dopadly[ObjectIdentifier(sa)] == nil { dopadly[ObjectIdentifier(sa)] = sa.pos.x }
                 if sa.pos.x < env.dockL + 19 || sa.pos.x > env.dockR - 19 { mimo = true }

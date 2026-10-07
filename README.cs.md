@@ -21,7 +21,8 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 3. Úvodní okno ukáže ovládání a nabídne spouštění po přihlášení.
 
 Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0` → `dist/Julie-1.0.dmg` a `.zip`
-(univerzální aplikace; před zabalením proběhne samotest). Při novém vydání přepiš číslo verze
+(univerzální aplikace; před zabalením proběhne samotest; disk v DMG má ikonu Julie v krabici z
+`art/dmg_ikona.png`, kreslí ji `art/dmg_ikona.py`). Při novém vydání přepiš číslo verze
 v odkazech ke stažení v obou README a na webu (`docs/index.html`, `docs/cs/index.html`, včetně
 `softwareVersion`); odkaz `releases/latest/download/` hledá soubor podle jména.
 Soukromí: bez sítě, nic nesbírá

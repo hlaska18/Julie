@@ -65,11 +65,45 @@ codesign --verify --strict "$APP" || { echo "Podpis nesedí – nevydávám."; e
 "$APP/Contents/MacOS/Julie" --test >/dev/null || { echo "Samotest neprošel – nevydávám."; exit 1; }
 ( cd "$OUT" && ditto -c -k --keepParent Julie.app "Julie-$VERZE.zip" )
 DMGDIR="$OUT/dmg"; mkdir -p "$DMGDIR"; ditto "$APP" "$DMGDIR/Julie.app"; ln -s /Applications "$DMGDIR/Applications"
-hdiutil create -volname "Julie" -srcfolder "$DMGDIR" -ov -format UDZO "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
-# kontrola hotového DMG: aplikace v něm musí být podepsaná
+# ikona disku: Julie v krabici (art/dmg_ikona.png, kreslí art/dmg_ikona.py)
+IKONA=0
+if [ -f art/dmg_ikona.png ] && python3 -c "import PIL" 2>/dev/null; then
+  python3 - "$DMGDIR/.VolumeIcon.icns" <<'PY'
+import os, sys, shutil, subprocess, tempfile
+from PIL import Image
+src = Image.open("art/dmg_ikona.png").convert("RGBA")       # mřížka 64 × 64: všechny velikosti jsou celé násobky
+d = tempfile.mkdtemp(); iconset = os.path.join(d, "Disk.iconset"); os.makedirs(iconset)
+for base in (16, 32, 128, 256, 512):
+    for sc in (1, 2):
+        n = base * sc
+        src.resize((n, n), Image.NEAREST).save(os.path.join(iconset, f"icon_{base}x{base}" + ("@2x" if sc == 2 else "") + ".png"))
+subprocess.run(["iconutil", "-c", "icns", iconset, "-o", sys.argv[1]], check=True)
+shutil.rmtree(d)
+PY
+  IKONA=1
+fi
+# DMG nejdřív zapisovatelný: kořeni disku se musí nastavit příznak „vlastní ikona“, pak se zkomprimuje
+hdiutil create -volname "Julie" -srcfolder "$DMGDIR" -fs HFS+ -format UDRW -ov "$OUT/rw.dmg" >/dev/null 2>&1
+RW="$OUT/rw"; mkdir -p "$RW"
+hdiutil attach -nobrowse -noautoopen -readwrite -mountpoint "$RW" "$OUT/rw.dmg" >/dev/null 2>&1
+if [ "$IKONA" = 1 ]; then
+  # FinderInfo složky (32 bajtů): bajty 8–9 jsou příznaky, 0x0400 = kHasCustomIcon
+  xattr -wx com.apple.FinderInfo 0000000000000000040000000000000000000000000000000000000000000000 "$RW"
+fi
+hdiutil detach "$RW" >/dev/null 2>&1
+hdiutil convert "$OUT/rw.dmg" -format UDZO -ov -o "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
+rm -f "$OUT/rw.dmg"
+# kontrola hotového DMG: aplikace v něm musí být podepsaná a disk musí mít ikonu
 MNT="$OUT/mnt"; mkdir -p "$MNT"
 hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
 codesign --verify --strict "$MNT/Julie.app" || { hdiutil detach "$MNT" >/dev/null 2>&1; echo "Aplikace v DMG není podepsaná – nevydávám."; exit 1; }
+if [ "$IKONA" = 1 ]; then
+  { [ -f "$MNT/.VolumeIcon.icns" ] && xattr -px com.apple.FinderInfo "$MNT" | tr -d ' \n' | grep -q '^00000000000000000400'; } \
+    || { hdiutil detach "$MNT" >/dev/null 2>&1; echo "Disk v DMG nemá ikonu – nevydávám."; exit 1; }
+  echo "Ikona disku: Julie v krabici."
+else
+  echo "Ikona disku chybí (chybí Pillow nebo art/dmg_ikona.png)."
+fi
 hdiutil detach "$MNT" >/dev/null 2>&1
 cp "$OUT/Julie-$VERZE.zip" "$OUT/Julie-$VERZE.dmg" "$DIST/"
 lipo -info "$APP/Contents/MacOS/Julie"
