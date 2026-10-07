@@ -223,6 +223,111 @@ func runSelfTest() -> Bool {
         vysledek("rychlost chůze stejná při 60 i 6 snímcích/s", a > 10 && abs(a - b) / a < 0.1, String(format: "%.0f vs %.0f bodů", a, b))
     }
 
+    // 9b) přivolání na padáčku: padáček se nepřeruší, po dopadu přijde
+    do {
+        let (pet, fx, env) = novy()
+        pet.mode = .grab
+        pet.pos = CGPoint(x: (env.dockL + env.dockR) / 2, y: env.screen.frame.maxY - 150)
+        pet.release()
+        let mys = Input(mouse: CGPoint(x: env.dockL + 100, y: env.floorY + 100), typing: false)
+        pet.call(to: mys.mouse)
+        var naPadaku = pet.mode == .parachute, prisla = false
+        var t: CGFloat = 0
+        while t < 40 {
+            Pet.step(pet, fx, 1.0 / 30, mys, floorY: env.floorY); t += 1.0 / 30
+            if pet.mode == .air { naPadaku = false }
+            if pet.act == .follow && pet.mode == .ground { prisla = true; break }
+        }
+        vysledek("přivolání na padáčku: doletí na padáčku, pak přijde", naPadaku && prisla, String(format: "%.1f s", t))
+    }
+
+    // 9c) přivolání nemaže pamlsky na Docku a pamlsek má přednost
+    do {
+        let (pet, fx, env) = novy()
+        fx.treatRange = (env.dockL + 20)...(env.dockR - 20)
+        naZemi(pet, env)
+        pet.dropTreat(at: pet.pos.x + 300, fromY: env.floorY + 10)
+        for _ in 0..<30 { Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY) }
+        pet.setAct(.sit, 60)
+        pet.call(to: CGPoint(x: env.dockL + 50, y: env.floorY + 50))
+        let zustal = fx.sausages.count == 1
+        // pak ho sní (po přivolání si ho všimne)
+        var t: CGFloat = 0
+        while t < 40 && !fx.sausages.isEmpty { Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30 }
+        vysledek("přivolání: pamlsky na Docku nezmizí, Julie je pak sní", zustal && fx.sausages.isEmpty, String(format: "%.1f s", t))
+    }
+
+    // 9d) ležící pamlsek má v nextAct přednost před pelíškem, ležením i míčkem
+    do {
+        let (pet, fx, env) = novy()
+        fx.treatRange = (env.dockL + 20)...(env.dockR - 20)
+        naZemi(pet, env)
+        pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
+        pet.ball = Pet.Ball(pos: CGPoint(x: pet.pos.x + 200, y: env.floorY + 10), vel: .zero, onGround: true, carried: false)
+        pet.dropTreat(at: pet.pos.x - 300, fromY: env.floorY + 10)
+        var vzdy = true
+        for _ in 0..<200 {
+            pet.setAct(.sit, 1)
+            pet.nextAct(nikde)
+            if pet.act != .sausage { vzdy = false; break }
+        }
+        vysledek("ležící pamlsek má přednost před pelíškem, ležením i míčkem", vzdy)
+    }
+
+    // 9e) přivolání pod zemí: nora se dokončí (vyleze z díry), pak přijde
+    do {
+        let (pet, fx, env) = novy()
+        naZemi(pet, env)
+        pet.setAct(.dig, 1)
+        var t: CGFloat = 0
+        while t < 15 && pet.burrowPhase < 3 { Pet.step(pet, fx, 1.0 / 60, nikde, floorY: env.floorY); t += 1.0 / 60 }
+        let mys = CGPoint(x: env.dockL + 60, y: env.floorY + 60)
+        pet.call(to: mys)
+        let dohrabala = pet.act == .dig
+        var vylezla = false, prisla = false
+        while t < 30 {
+            Pet.step(pet, fx, 1.0 / 60, Input(mouse: mys, typing: false), floorY: env.floorY); t += 1.0 / 60
+            if pet.act == .dig && pet.burrowPhase >= 6 { vylezla = true }
+            if pet.act == .follow { prisla = true; break }
+        }
+        vysledek("přivolání pod zemí: nejdřív vyleze z díry, pak přijde", dohrabala && vylezla && prisla)
+    }
+
+    // 9f) přivolání z pelíšku: vyskočí ven (ne přesun skrz okraj), pak přijde
+    do {
+        let (pet, fx, env) = novy()
+        naZemi(pet, env)
+        pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
+        pet.bedToggle()
+        var t: CGFloat = 0
+        while t < 30 && pet.act != .inBed { Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30 }
+        let mys = CGPoint(x: env.dockL + 60, y: env.floorY + 60)
+        pet.call(to: mys)
+        var vyskocila = false, prisla = false
+        for _ in 0..<(30 * 8) {
+            Pet.step(pet, fx, 1.0 / 30, Input(mouse: mys, typing: false), floorY: env.floorY)
+            if pet.act == .outOfBed { vyskocila = true }
+            if pet.act == .follow { prisla = true; break }
+        }
+        vysledek("přivolání z pelíšku: vyskočí ven, pak přijde", vyskocila && prisla)
+    }
+
+    // 9g) překvapení se odpočítávají podle času, kdy je vzhůru (ne podle délky činnosti)
+    do {
+        let (pet, fx, env) = novy()
+        pet.cfg.mischief = true
+        naZemi(pet, env)
+        pet.setAct(.sit, 999)
+        pet.nextEgg = 500
+        for _ in 0..<(30 * 10) { Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY) }
+        let vzhuru = 500 - pet.nextEgg
+        pet.setAct(.sleep, 999)
+        let pred = pet.nextEgg
+        for _ in 0..<(30 * 10) { Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY) }
+        vysledek("překvapení: odpočet běží jen vzhůru a podle času", abs(vzhuru - 10) < 0.5 && pet.nextEgg == pred,
+                 String(format: "vzhůru %.1f s, ve spánku %.1f s", vzhuru, pred - pet.nextEgg))
+    }
+
     // 10) všechny jazyky mají všechny texty
     do {
         let klice = Set(Texty.tabulka["cs"]!.keys)

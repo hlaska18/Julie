@@ -185,6 +185,8 @@ final class Pet {
 
     func update(_ dt: CGFloat, _ inp: Input) {
         clock += dt
+        // do dalšího překvapení se počítá jen čas, kdy je Julie vzhůru na zemi
+        if cfg.mischief && mode == .ground && ![.sleep, .lie, .inBed, .toBed, .outOfBed].contains(act) { nextEgg -= dt }
         updateCommon(dt, inp)
         switch mode {
         case .ground: updateGround(dt, inp)
@@ -257,6 +259,10 @@ final class Pet {
         pos.y = top + DogRenderer.ground * s
         actT += dt
         rotTarget = 0
+        if pendingCallUntil > clock && surfaceId == 0 && canInterrupt && ![.shake, .dizzy, .fetch, .sausage].contains(act) {
+            call(to: inp.mouse)
+            return
+        }
         if act == .inBed && bedSpot == nil {
             setAct(.stretch, 1.6)          // pelíšek zmizel (zvětšená Julie se do něj nevejde): vstane
         }
@@ -656,6 +662,8 @@ final class Pet {
     func nextAct(_ inp: Input) {
         if heldTreatPos != nil && surfaceId == 0 { startFetch(); return }
         if wantBed && surfaceId == 0 { wantBed = false; goToBed(untilClick: true); return }
+        // ležící pamlsek má přednost před vším ostatním
+        if !fx.sausages.isEmpty && surfaceId == 0 { setAct(.sausage, 999); treatsToDrop = 0; return }
         // denní režim: v noci a večer víc odpočívá, ráno je čilejší
         let part = dayPart
         if bedX != nil && surfaceId == 0 && Int.random(in: 0..<100) < [35, 4, 6, 15][part] { goToBed(untilClick: false); return }
@@ -663,16 +671,11 @@ final class Pet {
         if part == 1 && Int.random(in: 0..<100) < 20 { setAct(Bool.random() ? .stretch : .happy, 1.8); return }
         // občas si sama pohraje s míčkem, který leží na Docku
         if let b = ball, !b.carried, !ballHeldByUser, surfaceId == 0, Int.random(in: 0..<100) < 8 { startFetchBall(); return }
-        // ležící pamlsek má přednost před vším ostatním
-        if !fx.sausages.isEmpty && surfaceId == 0 { setAct(.sausage, 999); treatsToDrop = 0; return }
         if speedNow > 20 && act != .walk && act != .sniff { }
         let r = Int.random(in: 0..<100)
         let (lo, hi) = bounds()
         _ = (lo, hi)
         walkDir = Bool.random() ? 1 : -1
-        if cfg.mischief {
-            nextEgg -= actDur
-        }
         if cfg.mischief && nextEgg <= 0 && surfaceId == 0 {
             nextEgg = CGFloat.random(in: 120...300)
             startEgg(nil)
@@ -1350,7 +1353,7 @@ final class Pet {
         history = [(CGFloat(CACurrentMediaTime()), mouse)]
         speedNow = 0
         if act == .squirrel { fx.hideSquirrel() }
-        fx.clearSausages()
+        treatsToDrop = 0                    // ležící pamlsky zůstanou, po dopadu si je dojde sníst
         balloons = 0
         say("Haf?!", 1.5)
         act = .sit
@@ -1483,15 +1486,35 @@ final class Pet {
 
     func call(to mouse: CGPoint) {
         if mode == .grab || mode == .balloon { return }
+        // padáček, pád, lezení po okně: nejdřív bezpečně dopadne, pak přijde (padáček se nepřeruší)
         if mode != .ground {
-            if mode == .air { return }
-            startAir(v: .zero)
+            if mode != .air && mode != .parachute { startAir(v: .zero) }
+            pendingCallUntil = clock + 20
             return
         }
-        if surfaceId != 0 { startAir(v: CGPoint(x: 0, y: 200 * s)); return }
-        fx.clearSausages(); fx.hideSquirrel()
+        if surfaceId != 0 { startAir(v: CGPoint(x: 0, y: 200 * s)); pendingCallUntil = clock + 20; return }
+        if act == .inBed { pendingCallUntil = clock + 20; leaveBed(); return }   // vyskočí z pelíšku a přijde
+        // pod zemí, uprostřed skoku nebo při pamlsku: dokončí to a přijde potom
+        if !canInterrupt || act == .fetch || act == .sausage { pendingCallUntil = clock + 20; return }
+        pendingCallUntil = -1
+        fx.hideSquirrel()
         setAct(.follow, 14)
         say("Už běžím!", 1.5)
+    }
+
+    /// Přivolání čeká, až půjde činnost bezpečně přerušit (nejdéle 20 s).
+    var pendingCallUntil: CGFloat = -1
+
+    /// Dá se teď činnost přerušit? Ne ve vzduchu, pod zemí (nora od zanoření po vylezení),
+    /// uprostřed skoku do pelíšku ani při vyskakování z něj.
+    var canInterrupt: Bool {
+        guard mode == .ground else { return false }
+        switch act {
+        case .dig: return burrowPhase == 0 || burrowPhase == 7
+        case .toBed: return bedJumpT < 0
+        case .inBed, .outOfBed: return false
+        default: return true
+        }
     }
 
     // MARK: snímky
