@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://hlaska18.github.io/Julie/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hlaska18.github.io/Julie/"/>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://hlaska18.github.io/Julie/cs/"/>
+  </url>
+  <url>
+    <loc>https://hlaska18.github.io/Julie/cs/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hlaska18.github.io/Julie/"/>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://hlaska18.github.io/Julie/cs/"/>
+  </url>
+</urlset>

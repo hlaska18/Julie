@@ -11,7 +11,11 @@ on top of your Dock. She is modelled on a real dog called Julie. Inspired by
 She never talks – no speech bubbles, just a dog being a dog.
 
 **[Download Julie for Mac (DMG, 0.9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**
-· [all releases](https://github.com/hlaska18/Julie/releases)
+· [website](https://hlaska18.github.io/Julie/) · [all releases](https://github.com/hlaska18/Julie/releases)
+
+![Julie walks along the Dock, sniffs, barks, sits and stretches](docs/ukazky/chuze.gif)
+
+More animations (burrow, treats, fetch, bed, parachute, squirrel) are on the [website](https://hlaska18.github.io/Julie/).
 
 ## What she does
 - walks along the top edge of the Dock (and never past its ends), sniffs, sits, lies down,
@@ -69,6 +73,10 @@ Needs only the Command Line Tools (`xcode-select --install`), Python 3 with Pill
     ./build.sh          # builds and installs into ~/Applications
     ./release.sh 1.0    # universal app + dist/Julie-1.0.dmg and .zip (runs the self-test first)
     ~/Applications/Julie.app/Contents/MacOS/Julie --test   # self-test without a screen
+    python3 tools/ukazky.py     # records the GIFs in docs/ukazky from the real app (no screen recording)
+    python3 tools/web_obrazky.py   # icons and sharing images for the website in docs/
+
+The website is plain HTML in `docs/` (GitHub Pages, no build step).
 
 Code: `Sources/` (Swift + AppKit, no dependencies). Art: `art/` – pixel-art frames generated with AI
 (Higgsfield, GPT Image) from a drawing and photos of the real Julie and cut into a pixel grid by

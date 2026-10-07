@@ -9,7 +9,9 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 (čeština, angličtina, němčina, slovenština, polština; podle systému, přepnout v Nastavení).
 
 **[Stáhnout Julii pro Mac (DMG, 0,9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**
-· [všechna vydání](https://github.com/hlaska18/Julie/releases)
+· [web](https://hlaska18.github.io/Julie/cs/) · [všechna vydání](https://github.com/hlaska18/Julie/releases)
+
+![Julie jde po Docku, čuchá, štěká, sedne si a protáhne se](docs/ukazky/chuze.gif)
 
 ## Instalace (pro ostatní)
 1. Stáhni **[Julie-1.0.1.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**, otevři ho a přetáhni **Julie** do **Aplikací**.
@@ -20,7 +22,8 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 
 Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0` → `dist/Julie-1.0.dmg` a `.zip`
 (univerzální aplikace; před zabalením proběhne samotest). Při novém vydání přepiš číslo verze
-v odkazech ke stažení v obou README (odkaz `releases/latest/download/` hledá soubor podle jména).
+v odkazech ke stažení v obou README a na webu (`docs/index.html`, `docs/cs/index.html`, včetně
+`softwareVersion`); odkaz `releases/latest/download/` hledá soubor podle jména.
 Soukromí: bez sítě, nic nesbírá
 (podrobně v anglickém README).
 
@@ -38,6 +41,17 @@ důležitých chování, vrací 0 = vše OK), dále `--sim pad|padak|pamlsek|pel
 a `--nora soubor.png` (filmový pás nory).
 
 Nastavení je v `~/.jezevcik/jezevcik.json`, deník událostí v `~/.jezevcik/udalosti.log`.
+
+## Web
+Statická stránka v `docs/` pro GitHub Pages (Settings → Pages → Deploy from a branch → `main` / `/docs`),
+adresa https://hlaska18.github.io/Julie/ (anglicky) a `/cs/` (česky). Bez sestavování, bez cizích
+serverů: písmo Pixelify Sans (OFL) je přibalené v `docs/fonts/`. Barvy: paleta Minty Fresh z coolors.co,
+tlačítko a okna podle prvků z Uiverse.io (MIT, autoři v patičce).
+
+- `python3 tools/ukazky.py` natočí GIFy do `docs/ukazky/` ze skutečné aplikace (`Julie --ukazka <scéna>`,
+  vrstvy kreslí CARenderer mimo obrazovku, scéna běží v reálném čase). Po změně chování nebo vzhledu
+  Julie spustit znovu.
+- `python3 tools/web_obrazky.py` udělá pózy, ikonu a náhledy pro sdílení (`docs/img/og.png`, `og-cs.png`).
 
 ## Vzhled
 Podle Karlova obrázku `art/styl_julie.png` (hrubé pixely, bez obrysu). Pózy nakreslil
