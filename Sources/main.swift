@@ -1021,6 +1021,11 @@ if args.count >= 3 && args[1] == "--nora" {
     renderBurrow(to: args[2])
     exit(0)
 }
+if args.count >= 2 && args[1] == "--mereni" {
+    // Julie --mereni [od hodiny] [počet hodin]: simulovaný den bez člověka a jeho souhrn
+    zmerDen(od: args.count >= 3 ? Double(args[2]) ?? 8 : 8, hodin: args.count >= 4 ? Double(args[3]) ?? 8 : 8)
+    exit(0)
+}
 if args.count >= 4 && args[1] == "--ukazka" {
     exit(natocUkazku(args[2], do: args[3]) ? 0 : 1)
 }

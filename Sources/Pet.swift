@@ -165,6 +165,7 @@ final class Pet {
     }
 
     func setAct(_ a: Act, _ dur: CGFloat) {
+        pozorovatel?(a)
         if a != .fetchBall, ball?.carried == true { ball?.carried = false; ball?.vel = .zero }
         act = a
         actT = 0
@@ -935,11 +936,16 @@ final class Pet {
 
     // MARK: denní režim
 
+    /// Jen pro měření (Julie --mereni): hodina dne podle simulace místo skutečných hodin
+    /// a hlášení každé nové činnosti. V aplikaci zůstávají nil.
+    var simHodina: Double?
+    var pozorovatel: ((Act) -> Void)?
+
     /// 0 noc (22–7), 1 ráno (7–10), 2 den, 3 večer (19–22)
     private var dayPartCache = (part: 2, at: -999.0 as CGFloat)
     var dayPart: Int {
         if clock - dayPartCache.at > 60 || dayPartCache.at < 0 {
-            let h = Calendar.current.component(.hour, from: Date())
+            let h = simHodina.map { Int($0) % 24 } ?? Calendar.current.component(.hour, from: Date())
             let part = (h >= 22 || h < 7) ? 0 : (h < 10 ? 1 : (h >= 19 ? 3 : 2))
             dayPartCache = (part, clock)
         }

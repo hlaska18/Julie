@@ -39,7 +39,8 @@ Soukromí: bez sítě, nic nesbírá
 
 Kontrola bez obrazovky: `~/Applications/Julie.app/Contents/MacOS/Julie --test` (samotest všech
 důležitých chování, vrací 0 = vše OK), dále `--sim pad|padak|pamlsek|pelisek|veverka|dest|micek`
-a `--nora soubor.png` (filmový pás nory).
+a `--nora soubor.png` (filmový pás nory). `--mereni [od hodiny] [hodin]` nasimuluje den bez člověka
+(výchozí 8:00, 8 h) a vypíše, jak často a jak hned za sebou Julie co dělá – podle toho se ladí četnosti.
 
 Nastavení je v `~/.jezevcik/jezevcik.json`, deník událostí v `~/.jezevcik/udalosti.log`.
 
