@@ -1,6 +1,7 @@
 #!/bin/sh
 # Vydání pro ostatní: univerzální aplikace (Apple Silicon + Intel), macOS 12+, zabalená jako ZIP a DMG.
-# Výsledek: dist/Julie-<verze>.zip a dist/Julie-<verze>.dmg
+# Výsledek: dist/Julie.zip a dist/Julie.dmg (stálé názvy: odkazy releases/latest/download/Julie.dmg
+# na webu i v README se při novém vydání nemění; verze je v názvu vydání a v aplikaci)
 # Sestavuje se v dočasné složce mimo Plochu: iCloud přidává k souborům metadata
 # („Finder information“) a s nimi codesign aplikaci nepodepíše.
 set -e
@@ -63,7 +64,7 @@ xattr -cr "$APP"
 codesign -s - --force "$APP" || { echo "Podpis selhal – nevydávám."; exit 1; }
 codesign --verify --strict "$APP" || { echo "Podpis nesedí – nevydávám."; exit 1; }
 "$APP/Contents/MacOS/Julie" --test >/dev/null || { echo "Samotest neprošel – nevydávám."; exit 1; }
-( cd "$OUT" && ditto -c -k --keepParent Julie.app "Julie-$VERZE.zip" )
+( cd "$OUT" && ditto -c -k --keepParent Julie.app "Julie.zip" )
 DMGDIR="$OUT/dmg"; mkdir -p "$DMGDIR"; ditto "$APP" "$DMGDIR/Julie.app"; ln -s /Applications "$DMGDIR/Applications"
 # ikona disku: Julie v krabici (art/dmg_ikona.png, kreslí art/dmg_ikona.py)
 IKONA=0
@@ -91,11 +92,11 @@ if [ "$IKONA" = 1 ]; then
   xattr -wx com.apple.FinderInfo 0000000000000000040000000000000000000000000000000000000000000000 "$RW"
 fi
 hdiutil detach "$RW" >/dev/null 2>&1
-hdiutil convert "$OUT/rw.dmg" -format UDZO -ov -o "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
+hdiutil convert "$OUT/rw.dmg" -format UDZO -ov -o "$OUT/Julie.dmg" >/dev/null 2>&1
 rm -f "$OUT/rw.dmg"
 # kontrola hotového DMG: aplikace v něm musí být podepsaná a disk musí mít ikonu
 MNT="$OUT/mnt"; mkdir -p "$MNT"
-hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$OUT/Julie-$VERZE.dmg" >/dev/null 2>&1
+hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$OUT/Julie.dmg" >/dev/null 2>&1
 codesign --verify --strict "$MNT/Julie.app" || { hdiutil detach "$MNT" >/dev/null 2>&1; echo "Aplikace v DMG není podepsaná – nevydávám."; exit 1; }
 if [ "$IKONA" = 1 ]; then
   { [ -f "$MNT/.VolumeIcon.icns" ] && xattr -px com.apple.FinderInfo "$MNT" | tr -d ' \n' | grep -q '^00000000000000000400'; } \
@@ -105,7 +106,9 @@ else
   echo "Ikona disku chybí (chybí Pillow nebo art/dmg_ikona.png)."
 fi
 hdiutil detach "$MNT" >/dev/null 2>&1
-cp "$OUT/Julie-$VERZE.zip" "$OUT/Julie-$VERZE.dmg" "$DIST/"
+cp "$OUT/Julie.zip" "$OUT/Julie.dmg" "$DIST/"
 lipo -info "$APP/Contents/MacOS/Julie"
 echo "Podpis: ad hoc, ověřený (i v DMG)."
 ls -lh "$DIST"
+echo "SHA-256 pro web (docs/index.html a docs/cs/index.html):"
+shasum -a 256 "$DIST/Julie.dmg"

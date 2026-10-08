@@ -59,6 +59,9 @@ h1 { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: clamp(40
 .lead { margin: 0; max-width: 34em; font-size: 20px; text-wrap: pretty; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; padding-top: 8px; }
 .meta { margin: 0; font-size: 15px; }
+.need { margin: -8px 0 0; font-size: 16px; font-weight: 700; }
+.jen-mac { display: none; margin: 0; padding: 10px 14px; background: var(--sand); border: 2px solid var(--ink); font-weight: 700; }
+@media (hover: none) and (pointer: coarse) { .jen-mac { display: block; } }
 
 /* pixelové tlačítko (Adam Giebl, Uiverse.io, MIT) */
 a.px-btn, a.px-btn:hover { color: #fff; text-decoration: none; }
@@ -103,19 +106,12 @@ section h2 { margin: 0 0 12px; font-family: var(--pixel); font-weight: 700; font
 .row .inner { display: flex; flex-wrap: wrap; align-items: stretch; }
 .row .shot { flex: 0 1 560px; min-width: 0; border-right: 3px solid var(--ink); }
 .row p { margin: 0; flex: 1 1 320px; padding: 28px; font-size: 18px; align-self: center; }
-
-.play { padding-top: 64px; padding-bottom: 104px; }
-.play h2 { font-size: clamp(28px, 3.4vw, 38px); margin-bottom: 36px; }
-.keys { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 28px 36px; }
-.keys div { display: flex; flex-direction: column; gap: 10px; }
-.keys dt { font-weight: 700; }
-.keys dt kbd { font-size: 18px; padding: 6px 12px; box-shadow: 0 4px 0 var(--ink); }
-.keys dd { margin: 0; }
+.menu-note { margin: 40px 0 0; max-width: 46em; }
 
 .claude { background: var(--ink); color: var(--band-ink); }
 .claude .wrap { display: flex; flex-wrap: wrap; gap: 48px 72px; padding-top: 88px; padding-bottom: 88px; }
 .claude .text { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
-.claude .chip { border-color: var(--sand); }
+.claude .chip { border-color: var(--sand); color: var(--ink); }   /* jinak by ho přebarvilo .claude p (písková na pískové) */
 .claude h2 { margin: 0; }
 .claude p { margin: 0; color: var(--sand); }
 .claude code { font-family: var(--mono); font-size: 16px; color: var(--band-ink); }
@@ -131,9 +127,15 @@ section h2 { margin: 0 0 12px; font-family: var(--pixel); font-weight: 700; font
 .steps li { padding: 24px 24px 28px; display: flex; flex-direction: column; gap: 12px; }
 .steps b { font-family: var(--pixel); font-size: 44px; line-height: 1; color: var(--accent); }
 .steps strong { font-size: 20px; }
-.install .note { margin: 40px 0 10px; }
-pre { margin: 0; padding: 16px 20px; background: var(--ink); color: var(--band-ink); font-family: var(--mono); font-size: 16px; overflow-x: auto; border: 3px solid var(--ink); }
 .install .small { margin: 16px 0 0; font-size: 16px; }
+.why { margin-top: 40px; padding: 24px 28px 28px; border: 3px solid var(--ink); background: var(--paper); }
+.why h3 { margin: 0 0 8px; font-size: 20px; }
+.why h3 + p { margin-top: 0; }
+.why p { margin: 0 0 16px; }
+.why p:last-child { margin-bottom: 0; }
+.why * + h3 { margin-top: 24px; }
+.why code { font-family: var(--mono); font-size: 15px; }
+.why .hash { overflow-wrap: anywhere; }
 
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 40px 36px; padding-top: 48px; padding-bottom: 104px; }
 .facts .win { padding: 28px 28px 32px; }
@@ -141,6 +143,7 @@ pre { margin: 0; padding: 16px 20px; background: var(--ink); color: var(--band-i
 .facts p { margin: 0; }
 .facts code { font-family: var(--mono); font-size: 16px; }
 .facts ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.facts .cant { margin-top: 16px; font-size: 16px; }
 
 .final { background: var(--paper); border-top: 3px solid var(--ink); }
 .final .wrap { display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center; padding-top: 88px; padding-bottom: 88px; }
@@ -154,6 +157,9 @@ footer p { margin: 0; flex: 1 1 320px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .win, .px-btn, .px-btn::before, .px-btn::after { transition: none; }
+  /* žádné posouvání oken ani tlačítka */
+  .win:hover { translate: -5px -5px; box-shadow: 10px 10px 0 var(--ink); }
+  .px-btn:active { transform: none; }
 }
 @media (max-width: 600px) {
   body { font-size: 17px; }

@@ -10,7 +10,7 @@ on top of your Dock. She is modelled on a real dog called Julie. Inspired by
 
 She never talks – no speech bubbles, just a dog being a dog.
 
-**[Download Julie for Mac (DMG, 0.9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**
+**[Download Julie for Mac (DMG, 0.9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
 · [website](https://hlaska18.github.io/Julie/) · [all releases](https://github.com/hlaska18/Julie/releases)
 
 ![Julie walks along the Dock, sniffs, barks, sits and stretches](docs/ukazky/chuze.gif)
@@ -39,7 +39,7 @@ until you turn her on again), surprises, settings, language and a short how-to.
 Languages: English, Čeština, Deutsch, Slovenčina, Polski (follows your system language).
 
 ## Install
-1. Download **[Julie-1.0.1.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**, open it and drag **Julie** to **Applications**.
+1. Download **[Julie.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**, open it and drag **Julie** to **Applications**.
 2. Open Julie. Because the app is not notarized by Apple, macOS will say it cannot verify the developer.
    Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**
    (or, in Terminal: `xattr -dr com.apple.quarantine /Applications/Julie.app`).
@@ -71,7 +71,7 @@ Julie falls back to checking window sizes.
 Needs only the Command Line Tools (`xcode-select --install`), Python 3 with Pillow for the art scripts.
 
     ./build.sh          # builds and installs into ~/Applications
-    ./release.sh 1.0    # universal app + dist/Julie-1.0.dmg and .zip (runs the self-test first)
+    ./release.sh 1.0.2  # universal app + dist/Julie.dmg and Julie.zip (runs the self-test first)
     ~/Applications/Julie.app/Contents/MacOS/Julie --test   # self-test without a screen
     python3 tools/ukazky.py     # records the GIFs in docs/ukazky from the real app (no screen recording)
     python3 tools/web_obrazky.py   # icons and sharing images for the website in docs/

@@ -31,12 +31,12 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Julie",
-  "description": "Desktopový mazlíček pro macOS zdarma a s otevřeným kódem: pixelová jezevčice, která chodí po Docku.",
+  "description": "Desktopový mazlíček pro macOS zdarma, s otevřeným kódem: pixelová jezevčice, která chodí po Docku.",
   "applicationCategory": "DesktopEnhancementApplication",
   "operatingSystem": "macOS 12 nebo novější",
   "softwareVersion": "1.0.1",
   "fileSize": "0,9 MB",
-  "downloadUrl": "https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg",
+  "downloadUrl": "https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg",
   "url": "https://hlaska18.github.io/Julie/cs/",
   "image": "https://hlaska18.github.io/Julie/img/og-cs.png",
   "screenshot": "https://hlaska18.github.io/Julie/ukazky/chuze.png",
@@ -44,8 +44,7 @@
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CZK" },
-  "author": { "@type": "Person", "name": "Karel Hlas" },
-  "codeRepository": "https://github.com/hlaska18/Julie"
+  "author": { "@type": "Person", "name": "Karel Hlas" }
 }
 </script>
 </head>
@@ -73,10 +72,12 @@
 <p class="chip">Zdarma · otevřený kód · macOS 12+</p>
 <h1>Pixelový jezevčík, který bydlí na tvém Docku.</h1>
 <p class="lead">Julie cupitá po horním okraji Docku, hrabe nory, honí veverky a spí v pelíšku vedle něj. Nikdy nemluví. Je to prostě pes.</p>
+<p class="jen-mac">Julie je aplikace pro Mac. Otevři si tuhle stránku na Macu a stáhni si ji tam.</p>
 <div class="actions">
-<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg">Stáhnout pro Mac</a>
+<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg">Stáhnout pro Mac</a>
 <a href="https://github.com/hlaska18/Julie"><b>Zdrojový kód na GitHubu</b></a>
 </div>
+<p class="need">Potřebuje macOS 12 nebo novější a Dock dole na obrazovce, ne automaticky skrývaný.</p>
 <p class="meta">Verze 1.0.1 · 0,9 MB · Apple Silicon i Intel · čeština, English, Deutsch, slovenčina, polski</p>
 </div>
 <div class="hero-art">
@@ -105,6 +106,17 @@
 
 <div class="grid2">
 <article class="win">
+<h3 class="bar">Hlazení</h3>
+<div class="shot">
+<picture>
+<source srcset="../ukazky/hlazeni.png" media="(prefers-reduced-motion: reduce)">
+<img class="px" src="../ukazky/hlazeni.gif" width="560" height="200" loading="lazy" alt="Kurzor hladí Julii po hřbetě; lehne si, vyletí srdíčka a pak vstane a otřepe se">
+</picture>
+</div>
+<p>Přejížděj kurzorem po Julii sem a tam. Lehne si, vyletí srdíčka, a když přestaneš, vstane a otřepe se.</p>
+</article>
+
+<article class="win">
 <h3 class="bar">Hrabe noru</h3>
 <div class="shot">
 <picture>
@@ -123,7 +135,7 @@
 <img class="px" src="../ukazky/pamlsky.gif" width="560" height="200" loading="lazy" alt="Na Dock padají psí sušenky ve tvaru kosti a Julie běhá od jedné ke druhé a sní je">
 </picture>
 </div>
-<p>Zmáčkni <kbd>⌃⌥P</kbd> a u kurzoru se objeví sušenka, nebo v nabídce spusť déšť pamlsků. Je moc vysoko? Julie panáčkuje.</p>
+<p>Zmáčkni Control-Option-P (<kbd>⌃⌥P</kbd>) a u kurzoru se objeví sušenka, nebo v nabídce spusť déšť pamlsků. Je moc vysoko? Julie panáčkuje.</p>
 </article>
 
 <article class="win">
@@ -134,7 +146,7 @@
 <img class="px" src="../ukazky/micek.gif" width="560" height="200" loading="lazy" alt="Od kurzoru letí tenisák; Julie se ukloní ke hře, doběhne ho a donese zpátky pod kurzor">
 </picture>
 </div>
-<p>Zmáčkni <kbd>⌃⌥M</kbd> nebo hoď míček myší. Julie ti ho přinese pod kurzor.</p>
+<p>Zmáčkni Control-Option-M (<kbd>⌃⌥M</kbd>) nebo hoď míček myší. Julie ti ho přinese pod kurzor.</p>
 </article>
 
 <article class="win">
@@ -146,6 +158,17 @@
 </picture>
 </div>
 <p>Pelíšek stojí vedle Docku. Klikni na něj a Julie jde spát, dalším kliknutím ji vzbudíš. Občas tam zaleze sama.</p>
+</article>
+
+<article class="win">
+<h3 class="bar">Občas</h3>
+<div class="shot">
+<picture>
+<source srcset="../ukazky/veverka.png" media="(prefers-reduced-motion: reduce)">
+<img class="px" src="../ukazky/veverka.gif" width="560" height="200" loading="lazy" alt="Na konci Docku se objeví veverka; Julie štěkne a vystřelí za ní s vyplazeným jazykem">
+</picture>
+</div>
+<p>Objeví se veverka a Julie za ní vystřelí s vyplazeným jazykem. Jindy prší pamlsky nebo ji vynesou tři balónky, které postupně prasknou.</p>
 </article>
 </div>
 
@@ -162,29 +185,7 @@
 </div>
 </article>
 
-<article class="win row">
-<h3 class="bar">Občas</h3>
-<div class="inner">
-<div class="shot">
-<picture>
-<source srcset="../ukazky/veverka.png" media="(prefers-reduced-motion: reduce)">
-<img class="px" src="../ukazky/veverka.gif" width="560" height="200" loading="lazy" alt="Na konci Docku se objeví veverka; Julie štěkne a vystřelí za ní s vyplazeným jazykem">
-</picture>
-</div>
-<p>Objeví se veverka a Julie za ní vystřelí s vyplazeným jazykem. Jindy prší pamlsky nebo ji vynesou tři balónky, které postupně prasknou. Nikdy nevíš, co přijde.</p>
-</div>
-</article>
-</section>
-
-<section class="wrap play" aria-labelledby="hra">
-<h2 id="hra">Jak si s ní hrát</h2>
-<dl class="keys">
-<div><dt><kbd>⌃⌥P</kbd></dt><dd>Pamlsek u kurzoru. Dalším stisknutím ho pustíš.</dd></div>
-<div><dt><kbd>⌃⌥M</kbd></dt><dd>Míček na aport.</dd></div>
-<div><dt>Přejeď kurzorem po Julii</dt><dd>Sem a tam, a lehne si, ať ji pohladíš.</dd></div>
-<div><dt>Chyť ji myší</dt><dd>Zvedni ji, zhoupni a pusť. Dopadne bez odrážení.</dd></div>
-<div><dt>Kost v horní liště</dt><dd>Pamlsky, míček, pelíšek, překvapení, velikost, rychlost a jazyk. Uspíš ji na hodinu, do zítřka, nebo dokud ji zase nezapneš.</dd></div>
-</dl>
+<p class="menu-note">Všechno ostatní – pelíšek, překvapení, velikost, rychlost, jazyk a uspání na hodinu nebo do zítřka – najdeš pod malou kostičkou v horní liště.</p>
 </section>
 
 <section id="claude-code" class="claude">
@@ -192,7 +193,7 @@
 <div class="text">
 <p class="chip">Volitelné</p>
 <h2>Dělá ti společnost, když pracuje Claude Code.</h2>
-<p>Propojíš to v Nastavení. Julie přidá do <code>~/.claude/settings.json</code> čtyři malé háčky a uloží si zálohu. Odpojit jde kdykoli.</p>
+<p>Claude Code je programovací pomocník od Anthropicu, který běží v Terminálu. Když ho používáš, propoj ho v Nastavení Julie: přidá do <code>~/.claude/settings.json</code> čtyři malé háčky a uloží si zálohu. Odpojit jde kdykoli. Julie s Anthropicem nijak nesouvisí.</p>
 </div>
 <dl>
 <dt>Claude přemýšlí</dt><dd>sedne si a čeká</dd>
@@ -207,19 +208,25 @@
 <section id="instalace" class="wrap install">
 <h2>Instalace za minutu</h2>
 <ol class="steps">
-<li class="win"><b>1</b><strong>Stáhni a přetáhni</strong><span>Otevři <a href="https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg">Julie-1.0.1.dmg</a> a přetáhni Julii do Aplikací.</span></li>
-<li class="win"><b>2</b><strong>Jednou ji povol</strong><span>Julie není notarizovaná u Applu, takže se macOS nejdřív zeptá. Otevři Nastavení systému → Soukromí a zabezpečení, sjeď dolů a klikni na Přesto otevřít.</span></li>
+<li class="win"><b>1</b><strong>Stáhni a přetáhni</strong><span>Otevři <a href="https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg">Julie.dmg</a> a přetáhni Julii do Aplikací.</span></li>
+<li class="win"><b>2</b><strong>Jednou ji povol</strong><span>Dvakrát klikni na Julii. Poprvé ji macOS zablokuje, protože není notarizovaná u Applu – hlášku zavři. Pak otevři Nastavení systému → Soukromí a zabezpečení, sjeď dolů, klikni na Přesto otevřít a potvrď.</span></li>
 <li class="win"><b>3</b><strong>Pozdrav ji</strong><span>Úvodní okno ukáže ovládání a nabídne spouštění po přihlášení.</span></li>
 </ol>
-<p class="note">Radši Terminál? Tohle udělá krok 2:</p>
-<pre><code>xattr -dr com.apple.quarantine /Applications/Julie.app</code></pre>
-<p class="small">Vyžaduje macOS 12 nebo novější, Apple Silicon nebo Intel a Dock dole na hlavní obrazovce.</p>
+<p class="small">Na macOS 12: Předvolby systému → Zabezpečení a soukromí → Obecné → Přesto otevřít. Na macOS 13 a 14 můžeš taky na Julii v Aplikacích kliknout pravým tlačítkem a zvolit Otevřít.</p>
+<div class="why">
+<h3>Proč Julie není notarizovaná?</h3>
+<p>Notarizace potřebuje placený vývojářský účet u Applu (99 USD ročně). Julie je zdarma a vzniká ve volném čase, proto je podepsaná jen ad hoc. Její kód je otevřený: můžeš si ho přečíst na <a href="https://github.com/hlaska18/Julie">GitHubu</a> nebo si ji sestavit sám příkazem <code>./build.sh</code>.</p>
+<p>SHA-256 souboru Julie.dmg (verze 1.0.1): <code class="hash">19b5a423d64be6616e8eef96284ba46a6a2c6d218e863566c1d0b972d3411979</code></p>
+<h3>Odinstalace</h3>
+<p>V nabídce pod kostičkou: Nastavení → Odpojit od Claude Code (pokud jsi ho propojil), Nastavení → vypni Spouštět po přihlášení, pak Konec. Julii přetáhni z Aplikací do Koše a smaž složku <code>~/.jezevcik</code>.</p>
+</div>
+<p class="small">Vyžaduje macOS 12 nebo novější, Apple Silicon nebo Intel a Dock dole na hlavní obrazovce (ne automaticky skrývaný).</p>
 </section>
 
 <section class="wrap facts" aria-label="Soukromí a schovávání">
 <div class="win">
 <h2>Soukromí na prvním místě</h2>
-<p>Julie nikdy nejde na internet a nic nesbírá. Aby mohla fungovat, čte nastavení Docku, polohu oken (ne jejich obsah), polohu kurzoru a jestli je otevřená aplikace na celé obrazovce. Nastavení má v <code>~/.jezevcik</code>.</p>
+<p>Julie nikdy nejde na internet a nic nesbírá. Aby mohla fungovat, čte nastavení Docku, polohu oken (ne jejich obsah), polohu kurzoru, jak dávno byla stisknuta klávesa (nikdy ne která) a jestli je otevřená aplikace na celé obrazovce. Oprávnění Zpřístupnění je volitelné, jen pro přesné změření Docku. Nastavení má v <code>~/.jezevcik</code>.</p>
 </div>
 <div class="win">
 <h2>Ví, kdy se schovat</h2>
@@ -230,6 +237,7 @@
 <li>když je Mac zamčený nebo displej spí</li>
 <li>kdykoli ji uspíš v nabídce</li>
 </ul>
+<p class="cant">Jednu věc nepozná: sdílení obrazovky ve videohovoru. Než začneš sdílet, uspi ji v nabídce pod kostičkou na hodinu.</p>
 </div>
 </section>
 
@@ -237,7 +245,7 @@
 <div class="wrap">
 <img class="px" src="../img/spi.png" alt="" width="190" height="70">
 <h2 id="zaver">Na tvém Docku je místo pro psa.</h2>
-<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg">Stáhnout pro Mac</a>
+<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg">Stáhnout pro Mac</a>
 <p>Zdarma. Verze 1.0.1, 0,9 MB. <a href="https://github.com/hlaska18/Julie/releases">Všechna vydání</a></p>
 </div>
 </section>

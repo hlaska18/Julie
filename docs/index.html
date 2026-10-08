@@ -31,12 +31,12 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Julie",
-  "description": "A free, open-source pixel-art dachshund desktop pet that walks on the macOS Dock.",
+  "description": "A free pixel-art dachshund desktop pet with open-source code that walks on the macOS Dock.",
   "applicationCategory": "DesktopEnhancementApplication",
   "operatingSystem": "macOS 12 or later",
   "softwareVersion": "1.0.1",
   "fileSize": "0.9 MB",
-  "downloadUrl": "https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg",
+  "downloadUrl": "https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg",
   "url": "https://hlaska18.github.io/Julie/",
   "image": "https://hlaska18.github.io/Julie/img/og.png",
   "screenshot": "https://hlaska18.github.io/Julie/ukazky/chuze.png",
@@ -44,8 +44,7 @@
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "author": { "@type": "Person", "name": "Karel Hlas" },
-  "codeRepository": "https://github.com/hlaska18/Julie"
+  "author": { "@type": "Person", "name": "Karel Hlas" }
 }
 </script>
 </head>
@@ -70,13 +69,15 @@
 
 <section class="wrap hero">
 <div class="hero-text">
-<p class="chip">Free · open source · macOS 12+</p>
+<p class="chip">Free · open-source code · macOS 12+</p>
 <h1>A pixel dachshund that lives on your Dock.</h1>
 <p class="lead">Julie trots along the top of your macOS Dock, digs burrows, chases squirrels and naps in her bed next to it. She never talks. She is just a dog being a dog.</p>
+<p class="jen-mac">Julie is a Mac app. Open this page on your Mac to download her.</p>
 <div class="actions">
-<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg">Download for Mac</a>
+<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg">Download for Mac</a>
 <a href="https://github.com/hlaska18/Julie"><b>Source on GitHub</b></a>
 </div>
+<p class="need">Needs macOS 12 or later and the Dock at the bottom of the screen, not auto-hidden.</p>
 <p class="meta">Version 1.0.1 · 0.9 MB · Apple Silicon and Intel · English, Čeština, Deutsch, Slovenčina, Polski</p>
 </div>
 <div class="hero-art">
@@ -105,6 +106,17 @@
 
 <div class="grid2">
 <article class="win">
+<h3 class="bar">Pet her</h3>
+<div class="shot">
+<picture>
+<source srcset="ukazky/hlazeni.png" media="(prefers-reduced-motion: reduce)">
+<img class="px" src="ukazky/hlazeni.gif" width="560" height="200" loading="lazy" alt="The cursor strokes Julie's back; she lies down, little hearts float up, and afterwards she gets up and shakes herself">
+</picture>
+</div>
+<p>Move the cursor back and forth over her. She lies down, hearts float up, and when you stop she gets up and shakes herself.</p>
+</article>
+
+<article class="win">
 <h3 class="bar">Digs a burrow</h3>
 <div class="shot">
 <picture>
@@ -123,7 +135,7 @@
 <img class="px" src="ukazky/pamlsky.gif" width="560" height="200" loading="lazy" alt="Bone-shaped dog biscuits fall onto the Dock and Julie runs from one to the next, eating them">
 </picture>
 </div>
-<p>Press <kbd>⌃⌥P</kbd> for a biscuit at your cursor, or let it rain treats from the menu. Too high? She begs on her hind legs.</p>
+<p>Press Control-Option-P (<kbd>⌃⌥P</kbd>) for a biscuit at your cursor, or let it rain treats from the menu. Too high? She begs on her hind legs.</p>
 </article>
 
 <article class="win">
@@ -134,7 +146,7 @@
 <img class="px" src="ukazky/micek.gif" width="560" height="200" loading="lazy" alt="A tennis ball is thrown from the cursor; Julie bows to play, chases it and carries it back under the cursor">
 </picture>
 </div>
-<p>Press <kbd>⌃⌥M</kbd> or throw the ball with your mouse. She brings it back to your cursor.</p>
+<p>Press Control-Option-M (<kbd>⌃⌥M</kbd>) or throw the ball with your mouse. She brings it back to your cursor.</p>
 </article>
 
 <article class="win">
@@ -146,6 +158,17 @@
 </picture>
 </div>
 <p>Her bed sits next to the Dock. Click it to send her to sleep, click again to wake her. Sometimes she goes on her own.</p>
+</article>
+
+<article class="win">
+<h3 class="bar">Now and then</h3>
+<div class="shot">
+<picture>
+<source srcset="ukazky/veverka.png" media="(prefers-reduced-motion: reduce)">
+<img class="px" src="ukazky/veverka.gif" width="560" height="200" loading="lazy" alt="A squirrel appears at the end of the Dock; Julie barks and sprints after it with her tongue out">
+</picture>
+</div>
+<p>A squirrel shows up and Julie sprints after it, tongue out. Or it rains treats, or three balloons lift her up and pop one by one.</p>
 </article>
 </div>
 
@@ -162,29 +185,7 @@
 </div>
 </article>
 
-<article class="win row">
-<h3 class="bar">Now and then</h3>
-<div class="inner">
-<div class="shot">
-<picture>
-<source srcset="ukazky/veverka.png" media="(prefers-reduced-motion: reduce)">
-<img class="px" src="ukazky/veverka.gif" width="560" height="200" loading="lazy" alt="A squirrel appears at the end of the Dock; Julie barks and sprints after it with her tongue out">
-</picture>
-</div>
-<p>A squirrel shows up and Julie sprints after it, tongue out. Or it rains treats, or three balloons lift her up and pop one by one. You never know which one is next.</p>
-</div>
-</article>
-</section>
-
-<section class="wrap play" aria-labelledby="play">
-<h2 id="play">How to play with her</h2>
-<dl class="keys">
-<div><dt><kbd>⌃⌥P</kbd></dt><dd>A treat at your cursor. Press again to drop it.</dd></div>
-<div><dt><kbd>⌃⌥M</kbd></dt><dd>A ball to fetch.</dd></div>
-<div><dt>Move the cursor over her</dt><dd>Back and forth, and she lies down to be petted.</dd></div>
-<div><dt>Drag her</dt><dd>Pick her up, swing her, let go. She lands without bouncing.</dd></div>
-<div><dt>The bone in your menu bar</dt><dd>Treats, ball, bed, surprises, size, speed and language. Put her to sleep for an hour, until tomorrow, or until you wake her.</dd></div>
-</dl>
+<p class="menu-note">Everything else – her bed, surprises, size, speed, language, putting her to sleep for an hour or until tomorrow – is under the little bone in your menu bar.</p>
 </section>
 
 <section id="claude-code" class="claude">
@@ -192,7 +193,7 @@
 <div class="text">
 <p class="chip">Optional</p>
 <h2>She keeps you company while Claude Code works.</h2>
-<p>Connect it in Settings. Julie adds four small hooks to <code>~/.claude/settings.json</code> and keeps a backup. Disconnect any time.</p>
+<p>Claude Code is Anthropic's coding assistant for the Terminal. If you use it, connect it in Julie's Settings: she adds four small hooks to <code>~/.claude/settings.json</code> and keeps a backup. Disconnect any time. Julie is not affiliated with Anthropic.</p>
 </div>
 <dl>
 <dt>Claude is thinking</dt><dd>she sits and waits</dd>
@@ -207,19 +208,25 @@
 <section id="install" class="wrap install">
 <h2>Install in a minute</h2>
 <ol class="steps">
-<li class="win"><b>1</b><strong>Download and drag</strong><span>Open <a href="https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg">Julie-1.0.1.dmg</a> and drag Julie to Applications.</span></li>
-<li class="win"><b>2</b><strong>Allow her once</strong><span>Julie is not notarized by Apple, so macOS asks first. Open System Settings, Privacy &amp; Security, scroll down and click Open Anyway.</span></li>
+<li class="win"><b>1</b><strong>Download and drag</strong><span>Open <a href="https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg">Julie.dmg</a> and drag Julie to Applications.</span></li>
+<li class="win"><b>2</b><strong>Allow her once</strong><span>Double-click Julie. The first time, macOS blocks her because she isn't notarized by Apple – close the message. Then open System Settings → Privacy &amp; Security, scroll down, click Open Anyway and confirm.</span></li>
 <li class="win"><b>3</b><strong>Say hello</strong><span>A welcome window shows the controls and lets you start Julie at login.</span></li>
 </ol>
-<p class="note">Prefer the Terminal? This does step 2:</p>
-<pre><code>xattr -dr com.apple.quarantine /Applications/Julie.app</code></pre>
-<p class="small">Needs macOS 12 or later, on Apple Silicon or Intel, with the Dock at the bottom of the main display.</p>
+<p class="small">On macOS 12: System Preferences → Security &amp; Privacy → General → Open Anyway. On macOS 13 and 14 you can also right-click Julie in Applications and choose Open.</p>
+<div class="why">
+<h3>Why isn't Julie notarized?</h3>
+<p>Notarization needs a paid Apple developer account (99 USD a year). Julie is a free project made in spare time, so she's only signed ad hoc. Her code is open: you can read it on <a href="https://github.com/hlaska18/Julie">GitHub</a> or build her yourself with <code>./build.sh</code>.</p>
+<p>SHA-256 of Julie.dmg (version 1.0.1): <code class="hash">19b5a423d64be6616e8eef96284ba46a6a2c6d218e863566c1d0b972d3411979</code></p>
+<h3>Uninstall</h3>
+<p>In the bone menu: Settings → Disconnect from Claude Code (if you connected it), Settings → turn off Start at login, then Quit. Drag Julie from Applications to the Trash and delete the folder <code>~/.jezevcik</code>.</p>
+</div>
+<p class="small">Needs macOS 12 or later, on Apple Silicon or Intel, with the Dock at the bottom of the main display (not auto-hidden).</p>
 </section>
 
 <section class="wrap facts" aria-label="Privacy and hiding">
 <div class="win">
 <h2>Private by design</h2>
-<p>Julie never touches the network and collects nothing. To do her job she reads the Dock settings, where windows are (not what is in them), the cursor position, and whether a full-screen app is open. Her settings live in <code>~/.jezevcik</code>.</p>
+<p>Julie never touches the network and collects nothing. To do her job she reads the Dock settings, where windows are (not what is in them), the cursor position, how long ago a key was pressed (never which key) and whether a full-screen app is open. Accessibility permission is optional, only to measure the Dock exactly. Her settings live in <code>~/.jezevcik</code>.</p>
 </div>
 <div class="win">
 <h2>She knows when to hide</h2>
@@ -230,6 +237,7 @@
 <li>while the Mac is locked or the display sleeps</li>
 <li>whenever you put her to sleep from the menu</li>
 </ul>
+<p class="cant">One thing she can't notice: sharing your screen in a video call. Put her to sleep for an hour from the bone menu before you share.</p>
 </div>
 </section>
 
@@ -237,7 +245,7 @@
 <div class="wrap">
 <img class="px" src="img/spi.png" alt="" width="190" height="70">
 <h2 id="final">Your Dock has room for a dog.</h2>
-<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg">Download for Mac</a>
+<a class="px-btn" href="https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg">Download for Mac</a>
 <p>Free. Version 1.0.1, 0.9 MB. <a href="https://github.com/hlaska18/Julie/releases">All releases</a></p>
 </div>
 </section>

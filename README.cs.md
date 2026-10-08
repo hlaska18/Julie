@@ -8,23 +8,24 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 (stačí Command Line Tools). Julie nemluví, nemá bubliny. Nabídka je v pěti jazycích
 (čeština, angličtina, němčina, slovenština, polština; podle systému, přepnout v Nastavení).
 
-**[Stáhnout Julii pro Mac (DMG, 0,9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**
+**[Stáhnout Julii pro Mac (DMG, 0,9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
 · [web](https://hlaska18.github.io/Julie/cs/) · [všechna vydání](https://github.com/hlaska18/Julie/releases)
 
 ![Julie jde po Docku, čuchá, štěká, sedne si a protáhne se](docs/ukazky/chuze.gif)
 
 ## Instalace (pro ostatní)
-1. Stáhni **[Julie-1.0.1.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie-1.0.1.dmg)**, otevři ho a přetáhni **Julie** do **Aplikací**.
+1. Stáhni **[Julie.dmg](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**, otevři ho a přetáhni **Julie** do **Aplikací**.
 2. Otevři Julii. Aplikace není notarizovaná u Applu, macOS proto napíše, že nemůže ověřit vývojáře:
    **Nastavení systému → Soukromí a zabezpečení** → dole **Přesto otevřít**
    (nebo v Terminálu `xattr -dr com.apple.quarantine /Applications/Julie.app`).
 3. Úvodní okno ukáže ovládání a nabídne spouštění po přihlášení.
 
-Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0` → `dist/Julie-1.0.dmg` a `.zip`
+Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0.2` → `dist/Julie.dmg` a `dist/Julie.zip`
 (univerzální aplikace; před zabalením proběhne samotest; disk v DMG má ikonu Julie v krabici z
-`art/dmg_ikona.png`, kreslí ji `art/dmg_ikona.py`). Při novém vydání přepiš číslo verze
-v odkazech ke stažení v obou README a na webu (`docs/index.html`, `docs/cs/index.html`, včetně
-`softwareVersion`); odkaz `releases/latest/download/` hledá soubor podle jména.
+`art/dmg_ikona.png`, kreslí ji `art/dmg_ikona.py`). Soubory mají **stálé názvy**, takže odkazy
+`releases/latest/download/Julie.dmg` na webu i v README se nemění. Při novém vydání na webu
+(`docs/index.html`, `docs/cs/index.html`) přepiš jen číslo verze (text, `softwareVersion`) a SHA-256,
+který `release.sh` vypíše na konci.
 Soukromí: bez sítě, nic nesbírá
 (podrobně v anglickém README).
 
