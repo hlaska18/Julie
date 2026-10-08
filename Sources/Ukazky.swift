@@ -9,7 +9,7 @@ import UniformTypeIdentifiers
 /// na ploše. Vrstvy kreslí CARenderer do textury Metalu (bez obrazovky a bez nahrávání obrazovky);
 /// scéna běží v reálném čase, aby animace vrstev (štěkání, hlína, srdíčka) seděly s pohybem Julie.
 /// Dock je jen obecný pruh s barevnými čtverečky (žádné skutečné ikony).
-let ukazkoveSceny = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka"]
+let ukazkoveSceny = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka", "hlazeni"]
 
 func natocUkazku(_ scena: String, do slozka: String) -> Bool {
     _ = NSApplication.shared
@@ -126,8 +126,16 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
         pet.facing = -1
         kurzor.isHidden = false
         mys = CGPoint(x: dockL + 90, y: floorY + 95)
+    case "hlazeni":
+        pet.pos.x = (dockL + dockR) / 2 - 40
+        kurzor.isHidden = false
+        mys = CGPoint(x: dockR - 60, y: floorY + 110)
     default: break
     }
+    // hlazení: stejné rozpoznání jako v AppController.tick (sem a tam po Julii)
+    var tahSoucet: CGFloat = 0, tahObratu = 0, tahSmer: CGFloat = 0
+    var predchoziMys = mys
+    let mysStart = mys
 
     if scena == "pamlsky" { konec = 30 }
     let fps: CGFloat = 25, dt = 1 / fps
@@ -171,6 +179,34 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
         case "veverka":
             if udalost == 0 && t >= 0.4 { pet.startEgg(1); udalost = 1 }
             if udalost == 1 && pet.act != .squirrel && dobeh < 0 { dobeh = t }
+        case "hlazeni":
+            // kurzor dojede nad hřbet, pak přejíždí sem a tam, nakonec odjede
+            let r = pet.hitRect
+            let hrbet = CGPoint(x: r.midX, y: r.minY + r.height * 0.62)
+            if t < 0.9 {
+                let u = t / 0.9, e = u * u * (3 - 2 * u)
+                mys = CGPoint(x: mysStart.x + (hrbet.x - mysStart.x) * e, y: mysStart.y + (hrbet.y - mysStart.y) * e)
+            } else if t < 5.0 {
+                // jako skutečné hlazení: rychle a přes celý hřbet (aplikace ho pozná až po 160 bodech tahů)
+                let f = (t - 0.9) * 2 * .pi * 1.7
+                mys = CGPoint(x: hrbet.x + sin(f) * min(42, r.width * 0.4), y: hrbet.y + cos(f * 2) * 2)
+            } else {
+                let u = min(1, (t - 5.0) / 0.9), e = u * u * (3 - 2 * u)
+                mys = CGPoint(x: hrbet.x + (mysStart.x - hrbet.x) * e, y: hrbet.y + (mysStart.y - hrbet.y) * e)
+            }
+            tahSoucet *= exp(-dt * 1.2)
+            if r.contains(mys) {
+                let dx = mys.x - predchoziMys.x
+                if dx != 0 && (dx > 0) != (tahSmer > 0) { tahObratu += 1 }
+                if abs(dx) > 0.5 { tahSmer = dx }
+                tahSoucet += abs(dx)
+                if tahSoucet > 160 && tahObratu >= 2 { pet.petted(); tahSoucet = 60; udalost = 1 }
+            } else {
+                tahObratu = 0
+            }
+            predchoziMys = mys
+            if udalost == 1 && t > 5.0 && ![.petted, .shake].contains(pet.act) && dobeh < 0 { dobeh = t }
+            if t > 11 && dobeh < 0 { dobeh = t }
         default: break
         }
         if scena != "chuze" && scena != "pelisek" && dobeh >= 0 && !vsePrislo { vsePrislo = true; konec = dobeh + 1.4 }

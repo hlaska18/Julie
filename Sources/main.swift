@@ -461,8 +461,47 @@ final class AppController: NSObject, NSApplicationDelegate {
 
     func buildMenu() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.title = "🦴"
+        if let ikona = ikonaKosti() {
+            statusItem.button?.image = ikona
+            statusItem.button?.imagePosition = .imageOnly
+        } else {
+            statusItem.button?.title = "🦴"
+        }
+        statusItem.button?.toolTip = "Julie"
+        statusItem.button?.setAccessibilityLabel("Julie")
         rebuildMenu()
+    }
+
+    /// Ikona v horní liště: pixelová kost (kost.png) jako šablona. macOS ji sám obarví a ztlumí
+    /// stejně jako ostatní ikony (emoji 🦴 zůstávalo vždy jasné). 2 body na pixel, ostré i bez Retiny.
+    func ikonaKosti() -> NSImage? {
+        guard let src = DogRenderer.frames["kost"] else { return nil }
+        let w = src.width, h = src.height
+        guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                                  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        ctx.draw(src, in: CGRect(x: 0, y: 0, width: w, height: h))
+        guard let data = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
+        let img = NSImage(size: NSSize(width: w * 2, height: h * 2))
+        for k in [2, 4] {                                   // @1x a @2x
+            guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w * k, pixelsHigh: h * k, bitsPerSample: 8,
+                                             samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+                                             bytesPerRow: 0, bitsPerPixel: 0) else { continue }
+            rep.size = NSSize(width: w * 2, height: h * 2)
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+            NSColor.black.setFill()
+            for y in 0..<h {
+                for x in 0..<w where data[(y * w + x) * 4 + 3] > 128 {
+                    // první řádek dat je horní okraj obrázku, AppKit kreslí odspodu
+                    NSRect(x: CGFloat(x * k), y: CGFloat((h - 1 - y) * k), width: CGFloat(k), height: CGFloat(k)).fill()
+                }
+            }
+            NSGraphicsContext.restoreGraphicsState()
+            img.addRepresentation(rep)
+        }
+        img.isTemplate = true
+        return img
     }
 
     func item(_ title: String, _ sel: Selector, checked: Bool? = nil, tag: Int = 0) -> NSMenuItem {
