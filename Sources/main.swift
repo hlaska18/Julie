@@ -472,16 +472,24 @@ final class AppController: NSObject, NSApplicationDelegate {
         rebuildMenu()
     }
 
-    /// Ikona v horní liště: pixelová kost (kost.png) jako šablona. macOS ji sám obarví a ztlumí
-    /// stejně jako ostatní ikony (emoji 🦴 zůstávalo vždy jasné). Malinká: 1 bod na pixel (13 × 9 bodů).
+    /// Ikona v horní liště: malinká šikmá pixelová kost (Karel vybral variantu D, 8. 10. 2026) jako šablona.
+    /// macOS ji sám obarví a ztlumí stejně jako ostatní ikony (emoji 🦴 zůstávalo vždy jasné).
+    /// 1 bod na pixel (10 × 10 bodů), na Retině 2 × 2 pixely na bod.
+    static let tvarKosti = ["......##..",
+                            ".....####.",
+                            "......####",
+                            ".....###..",
+                            "....###...",
+                            "...###....",
+                            "..###.....",
+                            "####......",
+                            ".####.....",
+                            "..##......"]
+
     func ikonaKosti() -> NSImage? {
-        guard let src = DogRenderer.frames["kost"] else { return nil }
-        let w = src.width, h = src.height
-        guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
-                                  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
-        else { return nil }
-        ctx.draw(src, in: CGRect(x: 0, y: 0, width: w, height: h))
-        guard let data = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
+        let radky = AppController.tvarKosti.map { Array($0) }
+        let h = radky.count, w = radky.first?.count ?? 0
+        guard w > 0 else { return nil }
         let img = NSImage(size: NSSize(width: w, height: h))
         for k in [1, 2] {                                   // @1x a @2x
             guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w * k, pixelsHigh: h * k, bitsPerSample: 8,
@@ -492,8 +500,8 @@ final class AppController: NSObject, NSApplicationDelegate {
             NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
             NSColor.black.setFill()
             for y in 0..<h {
-                for x in 0..<w where data[(y * w + x) * 4 + 3] > 128 {
-                    // první řádek dat je horní okraj obrázku, AppKit kreslí odspodu
+                for x in 0..<w where radky[y][x] == "#" {
+                    // první řádek tvaru je horní okraj obrázku, AppKit kreslí odspodu
                     NSRect(x: CGFloat(x * k), y: CGFloat((h - 1 - y) * k), width: CGFloat(k), height: CGFloat(k)).fill()
                 }
             }
