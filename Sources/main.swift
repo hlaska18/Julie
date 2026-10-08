@@ -501,8 +501,9 @@ final class AppController: NSObject, NSApplicationDelegate {
             NSColor.black.setFill()
             for y in 0..<h {
                 for x in 0..<w where radky[y][x] == "#" {
+                    // kreslí se v BODECH (kontext je podle rep.size už zvětšený na pixely, na Retině 2×);
                     // první řádek tvaru je horní okraj obrázku, AppKit kreslí odspodu
-                    NSRect(x: CGFloat(x * k), y: CGFloat((h - 1 - y) * k), width: CGFloat(k), height: CGFloat(k)).fill()
+                    NSRect(x: CGFloat(x), y: CGFloat(h - 1 - y), width: 1, height: 1).fill()
                 }
             }
             NSGraphicsContext.restoreGraphicsState()
