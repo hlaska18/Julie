@@ -8,7 +8,7 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 (stačí Command Line Tools). Julie nemluví, nemá bubliny. Nabídka je v pěti jazycích
 (čeština, angličtina, němčina, slovenština, polština; podle systému, přepnout v Nastavení).
 
-**[Stáhnout Julii pro Mac (DMG, 0,9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
+**[Stáhnout Julii pro Mac (DMG, 0,7 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
 · [web](https://hlaska18.github.io/Julie/cs/) · [všechna vydání](https://github.com/hlaska18/Julie/releases)
 
 ![Julie jde po Docku, čuchá, štěká, sedne si a protáhne se](docs/ukazky/chuze.gif)

@@ -10,7 +10,7 @@ on top of your Dock. She is modelled on a real dog called Julie. Inspired by
 
 She never talks – no speech bubbles, just a dog being a dog.
 
-**[Download Julie for Mac (DMG, 0.9 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
+**[Download Julie for Mac (DMG, 0.7 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
 · [website](https://hlaska18.github.io/Julie/) · [all releases](https://github.com/hlaska18/Julie/releases)
 
 ![Julie walks along the Dock, sniffs, barks, sits and stretches](docs/ukazky/chuze.gif)
