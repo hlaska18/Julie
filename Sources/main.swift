@@ -473,7 +473,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     }
 
     /// Ikona v horní liště: pixelová kost (kost.png) jako šablona. macOS ji sám obarví a ztlumí
-    /// stejně jako ostatní ikony (emoji 🦴 zůstávalo vždy jasné). 2 body na pixel, ostré i bez Retiny.
+    /// stejně jako ostatní ikony (emoji 🦴 zůstávalo vždy jasné). Malinká: 1 bod na pixel (13 × 9 bodů).
     func ikonaKosti() -> NSImage? {
         guard let src = DogRenderer.frames["kost"] else { return nil }
         let w = src.width, h = src.height
@@ -482,12 +482,12 @@ final class AppController: NSObject, NSApplicationDelegate {
         else { return nil }
         ctx.draw(src, in: CGRect(x: 0, y: 0, width: w, height: h))
         guard let data = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
-        let img = NSImage(size: NSSize(width: w * 2, height: h * 2))
-        for k in [2, 4] {                                   // @1x a @2x
+        let img = NSImage(size: NSSize(width: w, height: h))
+        for k in [1, 2] {                                   // @1x a @2x
             guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w * k, pixelsHigh: h * k, bitsPerSample: 8,
                                              samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
                                              bytesPerRow: 0, bitsPerPixel: 0) else { continue }
-            rep.size = NSSize(width: w * 2, height: h * 2)
+            rep.size = NSSize(width: w, height: h)
             NSGraphicsContext.saveGraphicsState()
             NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
             NSColor.black.setFill()
