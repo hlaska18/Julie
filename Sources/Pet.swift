@@ -124,7 +124,7 @@ final class Pet {
     // roční období: hromádka listí (podzim) a závěj (zima) na Docku u pelíšku
     var simMesic: Int?                  // jen pro samotest a měření: měsíc místo skutečného data
     var simPasmo: TimeZone?
-    var ukazkaObdobi: Obdobi?           // nabídka Překvapení: ukázka i mimo sezónu
+    var ukazkaObdobi: Obdobi?           // nabídka Překvapení: skočí hned (i v noci, kdy listí jinak neleží)
     var hromadaFaze = 0                 // 0 dojde, 1 očichá, 2 skok dovnitř, 3 uvnitř, 4 skok ven, 5 otřepe se
     var hromadaT: CGFloat = 0
     var hromadaMoving = false
@@ -916,8 +916,12 @@ final class Pet {
         hromadaMoving = false
     }
 
-    /// Nabídka Překvapení: ukáže skok do listí nebo do závěje i mimo sezónu.
+    /// Nabídka Překvapení: skok do listí jen na podzim, do závěje jen v zimě (jinak je položka šedá).
+    func muzeSkocit(_ o: Obdobi) -> Bool { obdobi == o }
+
+    /// Nabídka Překvapení: skočí do listí nebo do závěje hned (když je to roční období).
     func ukazHromadu(_ o: Obdobi) {
+        guard muzeSkocit(o) else { return }
         ukazkaObdobi = o
         startHromada()
     }

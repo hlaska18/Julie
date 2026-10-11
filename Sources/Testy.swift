@@ -418,6 +418,20 @@ func runSelfTest() -> Bool {
                  [rijen, noc, cervenec, leden, vypnuto, sydney].map { $0 ?? "–" }.joined(separator: ","))
     }
 
+    // 9l2) nabídka Překvapení: skok do listí jen na podzim, do závěje jen v zimě
+    do {
+        func zkus(_ mesic: Int, _ o: Obdobi) -> Bool {
+            let (pet, _, env) = novy()
+            pet.simMesic = mesic; pet.simPasmo = TimeZone(identifier: "Europe/Prague")
+            naZemi(pet, env)
+            pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
+            pet.ukazHromadu(o)
+            return pet.muzeSkocit(o) && pet.act == .hromada
+        }
+        let ok = zkus(10, .podzim) && !zkus(10, .zima) && zkus(1, .zima) && !zkus(1, .podzim) && !zkus(7, .podzim) && !zkus(4, .zima)
+        vysledek("nabídka: skok do listí jen na podzim, do závěje jen v zimě", ok)
+    }
+
     // 9m) skok do listí a do závěje: dojde, skočí, je uvnitř (snímek sedí na hromádce), vyskočí, otřepe se
     for mesic in [10, 1] {
         let (pet, fx, env) = novy()

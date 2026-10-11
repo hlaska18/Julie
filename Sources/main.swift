@@ -7,7 +7,7 @@ final class PetPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
-final class AppController: NSObject, NSApplicationDelegate {
+final class AppController: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var cfg = Config.load()
     let env = Env()
     var fx: Effects!
@@ -824,9 +824,19 @@ final class AppController: NSObject, NSApplicationDelegate {
         if pet.surfaceId != 0 { pet.startAir(v: .zero); return }
         switch s.tag {
         case 0, 1, 2: pet.startEgg(s.tag)
-        case 4: pet.ukazHromadu(.podzim)     // skok do listí (ukázka i mimo podzim)
-        case 5: pet.ukazHromadu(.zima)       // skok do závěje
+        case 4: pet.ukazHromadu(.podzim)     // skok do listí (jen na podzim)
+        case 5: pet.ukazHromadu(.zima)       // skok do závěje (jen v zimě)
         default: pet.setAct(.dig, 4.6)       // Nora
+        }
+    }
+    /// Skok do listí jde jen na podzim a do závěje jen v zimě, jinak je položka šedá
+    /// (kontroluje se při každém otevření nabídky, takže se sama přepne podle data).
+    func validateMenuItem(_ it: NSMenuItem) -> Bool {
+        guard it.action == #selector(runEgg(_:)) else { return true }
+        switch it.tag {
+        case 4: return pet.muzeSkocit(.podzim)
+        case 5: return pet.muzeSkocit(.zima)
+        default: return true
         }
     }
     @objc func askAX() {

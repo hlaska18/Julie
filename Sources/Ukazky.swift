@@ -127,6 +127,7 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
         kurzor.isHidden = false
         mys = CGPoint(x: dockL + 90, y: floorY + 95)
     case "listi", "zavej":
+        pet.simMesic = scena == "listi" ? 10 : 1        // natáčí se kdykoli, ne jen v sezóně
         pet.pos.x = dockL + 110
         let b = fx.bedSize
         pet.bedSpot = CGPoint(x: dockR + 10 + 14 + b.width / 2, y: (floorY - b.height) / 2)
