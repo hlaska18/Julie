@@ -143,3 +143,5 @@ if __name__ == "__main__":
     zadni_nohy.main()
     import cuch_chuze                 # čmuchání po zemi: hlava dole, nohy kráčejí
     cuch_chuze.main()
+    import obdobi                     # roční období: hromádka listí a závěj (Karel 11. 10. 2026)
+    obdobi.main()

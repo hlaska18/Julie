@@ -390,6 +390,72 @@ func runSelfTest() -> Bool {
                  snimky.sorted().joined(separator: ","))
     }
 
+    // 9k) roční období podle data; na jižní polokouli obráceně
+    do {
+        let praha = TimeZone(identifier: "Europe/Prague")!, sydney = TimeZone(identifier: "Australia/Sydney")!
+        let ok = Obdobi.podle(mesice: 10, pasmo: praha) == .podzim && Obdobi.podle(mesice: 7, pasmo: praha) == .leto
+            && Obdobi.podle(mesice: 1, pasmo: praha) == .zima && Obdobi.podle(mesice: 4, pasmo: praha) == .jaro
+            && Obdobi.podle(mesice: 7, pasmo: sydney) == .zima && Obdobi.podle(mesice: 10, pasmo: sydney) == .jaro
+            && Obdobi.podle(mesice: 1, pasmo: sydney) == .leto
+        vysledek("roční období: podle měsíce, v Austrálii obráceně", ok)
+    }
+
+    // 9l) hromádka na Docku: listí na podzim přes den, závěj v zimě, v létě nic, s vypnutým darebáctvím nic
+    do {
+        func hromada(mesic: Int, hodina: Double, darebactvi: Bool = true, pasmo: String = "Europe/Prague") -> String? {
+            let (pet, _, env) = novy()
+            pet.cfg.mischief = darebactvi
+            pet.simMesic = mesic; pet.simHodina = hodina; pet.simPasmo = TimeZone(identifier: pasmo)
+            naZemi(pet, env)
+            pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
+            return pet.hromadaSnimek
+        }
+        let rijen = hromada(mesic: 10, hodina: 12), noc = hromada(mesic: 10, hodina: 23), cervenec = hromada(mesic: 7, hodina: 12)
+        let leden = hromada(mesic: 1, hodina: 12), vypnuto = hromada(mesic: 10, hodina: 12, darebactvi: false)
+        let sydney = hromada(mesic: 7, hodina: 12, pasmo: "Australia/Sydney")
+        vysledek("hromádka: v říjnu listí, v noci a v červenci nic, v lednu závěj, v Sydney v červenci závěj",
+                 rijen == "listi_hromada" && noc == nil && cervenec == nil && leden == "snih_zavej" && vypnuto == nil && sydney == "snih_zavej",
+                 [rijen, noc, cervenec, leden, vypnuto, sydney].map { $0 ?? "–" }.joined(separator: ","))
+    }
+
+    // 9m) skok do listí a do závěje: dojde, skočí, je uvnitř (snímek sedí na hromádce), vyskočí, otřepe se
+    for mesic in [10, 1] {
+        let (pet, fx, env) = novy()
+        pet.cfg.mischief = true
+        pet.simMesic = mesic; pet.simHodina = 12; pet.simPasmo = TimeZone(identifier: "Europe/Prague")
+        naZemi(pet, env, x: env.dockL + 200)
+        pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
+        pet.nextEgg = 9999
+        pet.dalsiHromada = 0
+        pet.nextAct(nikde)
+        let zacala = pet.act == .hromada
+        var faze = Set<Int>(), snimky = Set<String>()
+        var mimo = false, schovana = true, sedi: CGFloat = 0, spadla = false
+        let (lo, hi) = pet.dockBounds()
+        var t: CGFloat = 0
+        while t < 40 && pet.act == .hromada {
+            Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30
+            faze.insert(pet.hromadaFaze)
+            let f = pet.buildPose().frame
+            snimky.insert(f)
+            if pet.mode != .ground { spadla = true }
+            if pet.pos.x < lo - 3 * pet.pixel || pet.pos.x > hi + 3 * pet.pixel { mimo = true }
+            if pet.hromadaFaze == 3 {
+                if pet.hromadaSnimek != nil { schovana = false }
+                // střed snímku (zarovnaného podle hlavy) má být na středu hromádky
+                let w = CGFloat(DogRenderer.frames[f]?.width ?? 0)
+                let stredSnimku = pet.pos.x + pet.facing * ((DogRenderer.standWidth / 2).rounded() - w / 2) * pet.pixel
+                sedi = max(sedi, abs(stredSnimku - (pet.hromadaX ?? 0)))
+            }
+        }
+        let podzim = mesic == 10
+        let ocekavane: Set<String> = podzim ? ["skok", "listi_uvnitr", "listi_otrepani"] : ["skok", "snih_nori", "snih_ocas0", "snih_ocas1", "snih_otrepani"]
+        let ok = zacala && faze.isSuperset(of: [0, 1, 2, 3, 4, 5]) && snimky.isSuperset(of: ocekavane) && schovana
+            && sedi <= pet.pixel && !mimo && !spadla && pet.act != .hromada && (podzim ? pet.hromadaVyska == 1 : true)
+        vysledek(podzim ? "skok do listí: skočí dovnitř, listí ubude, otřepe se" : "skok do závěje: kouká jen vrtící se ocas, otřepe se", ok,
+                 String(format: "%.1f s, odchylka %.1f b., ", t, sedi) + snimky.sorted().joined(separator: ","))
+    }
+
     // 10) všechny jazyky mají všechny texty
     do {
         let klice = Set(Texty.tabulka["cs"]!.keys)

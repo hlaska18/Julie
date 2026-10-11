@@ -184,6 +184,59 @@ final class Effects {
         particles.append(Particle(layer: l, vel: CGPoint(x: vx, y: vy), life: dur, gravity: g))
     }
 
+    // MARK: roční období
+
+    private let listiBarvy: [CGColor] = [
+        CGColor(srgbRed: 0.96, green: 0.78, blue: 0.19, alpha: 1), CGColor(srgbRed: 0.93, green: 0.50, blue: 0.11, alpha: 1),
+        CGColor(srgbRed: 0.81, green: 0.18, blue: 0.13, alpha: 1), CGColor(srgbRed: 0.46, green: 0.57, blue: 0.16, alpha: 1)]
+    private let snihBarvy: [CGColor] = [
+        CGColor(srgbRed: 0.98, green: 0.99, blue: 1, alpha: 1), CGColor(srgbRed: 0.87, green: 0.91, blue: 0.96, alpha: 1),
+        CGColor(srgbRed: 0.69, green: 0.76, blue: 0.85, alpha: 1)]
+
+    /// Rozlétnuté listí: barevné pixely vyletí nahoru a pomalu padají (pestré, aby nevypadaly jako hlína).
+    func listi(at p: CGPoint, px: CGFloat, kolik: Int) {
+        vylet(at: p, px: px, kolik: kolik, barvy: listiBarvy, rychlost: 70...190, gravitace: 260, zivot: 1.1...1.7)
+    }
+
+    /// Odprýsklý sníh: bílé a modrošedé pixely (modrošedé jsou vidět i na světlém pozadí).
+    func snih(at p: CGPoint, px: CGFloat, kolik: Int) {
+        vylet(at: p, px: px, kolik: kolik, barvy: snihBarvy, rychlost: 90...220, gravitace: 520, zivot: 0.7...1.0)
+    }
+
+    private func vylet(at p: CGPoint, px: CGFloat, kolik: Int, barvy: [CGColor], rychlost: ClosedRange<CGFloat>,
+                       gravitace: CGFloat, zivot: ClosedRange<CGFloat>) {
+        let k = px / 2
+        for _ in 0..<kolik {
+            let l = CALayer()
+            let d = px * CGFloat(Int.random(in: 1...2))
+            l.bounds = CGRect(x: 0, y: 0, width: d, height: d)
+            l.backgroundColor = barvy.randomElement()!
+            l.position = CGPoint(x: p.x + CGFloat.random(in: -10...10) * px, y: p.y)
+            over.addSublayer(l)
+            let v = CGPoint(x: CGFloat.random(in: -90...90) * k, y: CGFloat.random(in: rychlost) * k)
+            particles.append(Particle(layer: l, vel: v, life: CGFloat.random(in: zivot), gravity: gravitace * k))
+        }
+    }
+
+    private let hromadaLayer = CALayer()
+    private var hromadaReady = false
+    private var hromadaNazev: String?
+
+    /// Hromádka listí nebo závěj na Docku (`x` = střed spodní hrany); nil = žádná.
+    func setHromada(_ snimek: String?, x: CGFloat, floorY: CGFloat) {
+        if !hromadaReady {
+            hromadaReady = true
+            hromadaLayer.magnificationFilter = .nearest
+            hromadaLayer.anchorPoint = CGPoint(x: 0.5, y: 0)
+            under.addSublayer(hromadaLayer)
+        }
+        guard let n = snimek, let img = DogRenderer.frames[n] else { hromadaLayer.isHidden = true; return }
+        if hromadaNazev != n { hromadaNazev = n; hromadaLayer.contents = img }
+        hromadaLayer.bounds = CGRect(x: 0, y: 0, width: CGFloat(img.width) * px, height: CGFloat(img.height) * px)
+        hromadaLayer.position = CGPoint(x: (x / px).rounded() * px, y: floorY)
+        hromadaLayer.isHidden = false
+    }
+
     private var moundImage: CGImage?
 
     /// Kupka vyhrabané hlíny (pixel art).

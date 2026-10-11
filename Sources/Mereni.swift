@@ -1,10 +1,10 @@
 import Cocoa
 
-/// Měření simulovaného dne: `Julie --mereni [od hodiny] [počet hodin]` (výchozí 8:00, 8 hodin).
+/// Měření simulovaného dne: `Julie --mereni [od hodiny] [počet hodin] [měsíc]` (výchozí 8:00, 8 hodin, dnešní měsíc).
 /// Julie běží sama, bez člověka (kurzor stojí nad Dockem, nikdo nekliká), s falešnými hodinami.
 /// Vypíše, jak často co dělá, jak hned za sebou štěká a leze do nory a kolikrát se činnost opakuje.
 /// Chování nijak nemění; podle výsledku se rozhoduje, jestli jsou potřeba pauzy mezi opakováním (rada 7. 10. 2026).
-func zmerDen(od: Double, hodin: Double) {
+func zmerDen(od: Double, hodin: Double, mesic: Int? = nil) {
     _ = NSApplication.shared
     DogRenderer.load()
     let env = Env()
@@ -15,6 +15,7 @@ func zmerDen(od: Double, hodin: Double) {
     cfg.size = 80; cfg.windowPlatforms = false
     let pet = Pet(cfg: cfg, env: env, fx: fx)
     pet.pixel = 2
+    pet.simMesic = mesic
     pet.mode = .ground
     pet.surfaceId = 0
     pet.pos = CGPoint(x: (env.dockL + env.dockR) / 2, y: env.floorY + DogRenderer.ground * pet.s)
@@ -82,6 +83,7 @@ func zmerDen(od: Double, hodin: Double) {
     odstupy("dig", 120)
     print(String(format: "\npřekvapení: veverka %d×, déšť pamlsků %d×, balónky %d×",
                  pocty["squirrel"] ?? 0, pocty["sausage"] ?? 0, balonky))
+    print("roční období: \(pet.obdobi), skok do listí / do závěje \(pocty["hromada"] ?? 0)×")
     let odpocinek = ["sleep", "lie", "inBed", "sit"].reduce(0) { $0 + (doba[$1] ?? 0) } / konec * 100
     print(String(format: "odpočinek (spí, leží, v pelíšku, sedí): %.0f %% času", odpocinek))
 }

@@ -9,7 +9,7 @@ import UniformTypeIdentifiers
 /// na ploše. Vrstvy kreslí CARenderer do textury Metalu (bez obrazovky a bez nahrávání obrazovky);
 /// scéna běží v reálném čase, aby animace vrstev (štěkání, hlína, srdíčka) seděly s pohybem Julie.
 /// Dock je jen obecný pruh s barevnými čtverečky (žádné skutečné ikony).
-let ukazkoveSceny = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka", "hlazeni"]
+let ukazkoveSceny = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka", "hlazeni", "listi", "zavej"]
 
 func natocUkazku(_ scena: String, do slozka: String) -> Bool {
     _ = NSApplication.shared
@@ -126,6 +126,10 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
         pet.facing = -1
         kurzor.isHidden = false
         mys = CGPoint(x: dockL + 90, y: floorY + 95)
+    case "listi", "zavej":
+        pet.pos.x = dockL + 110
+        let b = fx.bedSize
+        pet.bedSpot = CGPoint(x: dockR + 10 + 14 + b.width / 2, y: (floorY - b.height) / 2)
     case "hlazeni":
         pet.pos.x = (dockL + dockR) / 2 - 40
         kurzor.isHidden = false
@@ -137,7 +141,7 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
     var predchoziMys = mys
     let mysStart = mys
 
-    if scena == "pamlsky" { konec = 30 }
+    if scena == "pamlsky" || scena == "listi" || scena == "zavej" { konec = 30 }
     let fps: CGFloat = 25, dt = 1 / fps
     var t: CGFloat = 0
     var snimek = 0
@@ -176,6 +180,9 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
             if udalost == 3 && [.stretch, .walk, .sit].contains(pet.act) && dobeh < 0 { dobeh = t }
         case "padak":
             if pet.mode == .ground && ![.shake, .dizzy].contains(pet.act) && dobeh < 0 { dobeh = t }
+        case "listi", "zavej":
+            if udalost == 0 && t >= 0.4 { pet.ukazHromadu(scena == "listi" ? .podzim : .zima); udalost = 1 }
+            if udalost == 1 && pet.act != .hromada && dobeh < 0 { dobeh = t }
         case "veverka":
             if udalost == 0 && t >= 0.4 { pet.startEgg(1); udalost = 1 }
             if udalost == 1 && pet.act != .squirrel && dobeh < 0 { dobeh = t }
@@ -222,6 +229,9 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
         fx.dogLayer.position = CGPoint(x: ((cx - side / 2) / px).rounded() * px + side / 2,
                                        y: ((cy - side / 2) / px).rounded() * px + side / 2)
         fx.setBed(bottom: pet.bedSpot, inside: pet.act == .inBed && pet.mode == .ground)
+        // ukázka ročního období: hromádka zůstane vidět i po skoku (ukázka jinak končí s činností)
+        if ["listi", "zavej"].contains(scena) && pet.act != .hromada { pet.ukazkaObdobi = scena == "listi" ? .podzim : .zima }
+        fx.setHromada(pet.hromadaSnimek, x: pet.hromadaX ?? 0, floorY: env.floorY)
         let vTlame = pet.ball?.carried == true && p.frame.hasPrefix("mic_")
         fx.setBall(vTlame ? nil : pet.ball?.pos)
         kurzor.position = mys

@@ -425,6 +425,7 @@ final class AppController: NSObject, NSApplicationDelegate {
         fx.dogLayer.position = CGPoint(x: ((cx - side / 2) / px).rounded() * px + side / 2,
                                        y: ((cy - side / 2) / px).rounded() * px + side / 2)
         fx.setBed(bottom: pet.bedSpot, inside: pet.act == .inBed && pet.mode == .ground)
+        fx.setHromada(pet.hromadaSnimek, x: pet.hromadaX ?? 0, floorY: env.floorY)
         // míček v tlamě je nakreslený přímo ve snímku Julie (pokud snímky s míčkem máme)
         let carriedInFrame = pet.ball?.carried == true && p.frame.hasPrefix("mic_")
         fx.setBall(carriedInFrame ? nil : pet.ball?.pos)
@@ -572,7 +573,7 @@ final class AppController: NSObject, NSApplicationDelegate {
                 item(t("sleepTomorrow", ""), #selector(pauseTomorrow)),
                 item(t("sleepForever", ""), #selector(pauseForever))]))
         }
-        m.addItem(submenu(t("surprise", ""), ["balloons", "squirrel", "treatRain", "burrow"].enumerated().map { item(t($1, ""), #selector(runEgg(_:)), tag: $0) }))
+        m.addItem(submenu(t("surprise", ""), ["balloons", "squirrel", "treatRain", "burrow", "leafPile", "snowDrift"].enumerated().map { item(t($1, ""), #selector(runEgg(_:)), tag: $0) }))
         let sizes = [("small", 56), ("medium", 80), ("large", 110), ("huge", 150)].enumerated().map { i, v in
             item(t(v.0, ""), #selector(setSize(_:)), checked: Int(cfg.size) == v.1, tag: i) }
         let speeds = ["slow", "normal", "fast"].enumerated().map { i, n in
@@ -823,6 +824,8 @@ final class AppController: NSObject, NSApplicationDelegate {
         if pet.surfaceId != 0 { pet.startAir(v: .zero); return }
         switch s.tag {
         case 0, 1, 2: pet.startEgg(s.tag)
+        case 4: pet.ukazHromadu(.podzim)     // skok do listí (ukázka i mimo podzim)
+        case 5: pet.ukazHromadu(.zima)       // skok do závěje
         default: pet.setAct(.dig, 4.6)       // Nora
         }
     }
@@ -1096,8 +1099,9 @@ if args.count >= 3 && args[1] == "--nora" {
     exit(0)
 }
 if args.count >= 2 && args[1] == "--mereni" {
-    // Julie --mereni [od hodiny] [počet hodin]: simulovaný den bez člověka a jeho souhrn
-    zmerDen(od: args.count >= 3 ? Double(args[2]) ?? 8 : 8, hodin: args.count >= 4 ? Double(args[3]) ?? 8 : 8)
+    // Julie --mereni [od hodiny] [počet hodin] [měsíc]: simulovaný den bez člověka a jeho souhrn
+    zmerDen(od: args.count >= 3 ? Double(args[2]) ?? 8 : 8, hodin: args.count >= 4 ? Double(args[3]) ?? 8 : 8,
+            mesic: args.count >= 5 ? Int(args[4]) : nil)
     exit(0)
 }
 if args.count >= 4 && args[1] == "--ukazka" {

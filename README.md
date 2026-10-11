@@ -34,6 +34,9 @@ More animations (burrow, treats, fetch, bed, parachute, squirrel) are on the [we
 - **pet her**: move the cursor back and forth over her
 - now and then: a squirrel to chase, a treat rain, balloons
 - day mode: sleepier in the evening and at night, livelier in the morning
+- seasons, like the real Julie: in autumn a pile of leaves lies on the Dock and she jumps into it
+  a few times a day; in winter she dives into a snowdrift until only her wagging tail sticks out;
+  more walks in spring, more lying around at midday in summer (southern hemisphere: the other way round)
 - optional: reacts to [Claude Code](https://claude.com/claude-code) (sits while it thinks, digs while
   it runs commands, barks when it is waiting for you, jumps when it is done)
 

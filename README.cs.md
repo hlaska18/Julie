@@ -72,7 +72,10 @@ po puštění dopadne **bez odrážení** a otřepe se. Puštěná vysoko (nad p
 u obrazovky na výšku nad třetinou) se snese na **padáčku**. Čuchá (i s nosem u země sem a tam), drbe se, štěká, spí,
 hrabe noru (očichá, hrabe – tlapky se střídají, hlína letí dozadu na kupku –, zanoří se hlavou
 napřed a vyleze jinde přímo z díry). Pelíšek vedle Docku (spí v klubíčku), pamlsky, míček (aport),
-veverka (sprint s vyplazeným jazykem), balónky, hlazení, denní režim. Po návratu k Macu (odemčení
+veverka (sprint s vyplazeným jazykem), balónky, hlazení, denní režim. Roční období jako u skutečné
+Julie: na podzim leží na Docku hromádka listí a Julie do ní párkrát za den skočí, v zimě se zanoří
+do závěje, až kouká jen vrtící se ocas; na jaře víc chodí, v létě v poledne víc leží (na jižní
+polokouli obráceně; vypíná se s darebáctvím). Po návratu k Macu (odemčení
 nebo probuzení po aspoň 15 minutách) přivítá: štěkne, přiběhne pod kurzor a zapanáčkuje (vypnout
 v Nastavení „Vítat mě po návratu k Macu“).
 

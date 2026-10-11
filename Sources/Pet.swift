@@ -7,6 +7,7 @@ enum Act {
     case meteor, squirrel, sausage, shake, petted, toBed, inBed, outOfBed, fetch, fetchBall
     case snuffle    // čmuchá po zemi: hlava dole, pomalu sem a tam
     case beg        // panáčkuje (prosí o pomazlení nebo pamlsek)
+    case hromada    // skočí do hromádky listí (podzim) nebo do závěje (zima)
 }
 
 struct Input {
@@ -120,6 +121,18 @@ final class Pet {
     var squirrelSide: CGFloat = 1
     var nextEgg: CGFloat = CGFloat.random(in: 70...150)
 
+    // roční období: hromádka listí (podzim) a závěj (zima) na Docku u pelíšku
+    var simMesic: Int?                  // jen pro samotest a měření: měsíc místo skutečného data
+    var simPasmo: TimeZone?
+    var ukazkaObdobi: Obdobi?           // nabídka Překvapení: ukázka i mimo sezónu
+    var hromadaFaze = 0                 // 0 dojde, 1 očichá, 2 skok dovnitř, 3 uvnitř, 4 skok ven, 5 otřepe se
+    var hromadaT: CGFloat = 0
+    var hromadaMoving = false
+    var hromadaVyska = 0                // 0 plná, 1 a 2 nižší (po skocích); druhý den zase plná
+    private var hromadaDen = -1
+    /// Za kolik vteřin bdění zajde k hromádce (první skok po 15–45 minutách, pak 2–3× za den).
+    var dalsiHromada: CGFloat = CGFloat.random(in: 900...2700)
+
     init(cfg: Config, env: Env, fx: Effects) {
         self.cfg = cfg
         self.env = env
@@ -160,14 +173,17 @@ final class Pet {
     }
 
     func bounds() -> (CGFloat, CGFloat) {
-        if surfaceId == 0 {
-            // celá Julie (i čumák a ocas) zůstane nad Dockem – i u malé velikosti, kde má pixel aspoň 2 body
-            let m = max(70 * s, (half + 3) * pixel)
-            let lo = env.dockL + m, hi = env.dockR - m
-            return lo > hi ? ((lo + hi) / 2, (lo + hi) / 2) : (lo, hi)
-        }
+        if surfaceId == 0 { return dockBounds() }
         if let w = env.window(surfaceId) { return (w.frame.minX + 22 * s, w.frame.maxX - 22 * s) }
         return (env.left, env.right)
+    }
+
+    /// Kudy smí chodit po Docku: celá Julie (i čumák a ocas) zůstane nad Dockem –
+    /// i u malé velikosti, kde má pixel aspoň 2 body.
+    func dockBounds() -> (CGFloat, CGFloat) {
+        let m = max(70 * s, (half + 3) * pixel)
+        let lo = env.dockL + m, hi = env.dockR - m
+        return lo > hi ? ((lo + hi) / 2, (lo + hi) / 2) : (lo, hi)
     }
 
     func setAct(_ a: Act, _ dur: CGFloat) {
@@ -181,6 +197,7 @@ final class Pet {
         didTeleport = false
         if a != .toBed { bedJumpT = -1; bedPrepT = -1 }
         if a != .sausage { eatT = 0; eatTarget = nil }
+        if a != .hromada { ukazkaObdobi = nil }
         if a == .dig { holeX = pos.x; actDur = 999; burrowPhase = 0; burrowT = 0; burrowOff = .zero; burrowRot = 0 }
     }
 
@@ -194,6 +211,7 @@ final class Pet {
         clock += dt
         // do dalšího překvapení se počítá jen čas, kdy je Julie vzhůru na zemi
         if cfg.mischief && mode == .ground && ![.sleep, .lie, .inBed, .toBed, .outOfBed].contains(act) { nextEgg -= dt }
+        if hromadaDruh != nil && mode == .ground && ![.sleep, .lie, .inBed, .toBed, .outOfBed, .hromada].contains(act) { dalsiHromada -= dt }
         updateCommon(dt, inp)
         switch mode {
         case .ground: updateGround(dt, inp)
@@ -246,6 +264,7 @@ final class Pet {
         case .sausage: return treatMoving ? max(base * 2.4, 110 * s) : 0   // pro pamlsek spěchá i večer
         case .toBed: return toBedMoving ? max(base * 2, 90 * s) : 0
         case .snuffle: return snuffleMoving ? base * 0.45 : 0
+        case .hromada: return hromadaMoving ? max(base * 1.6, 70 * s) : 0      // k hromádce spěchá
         case .fetch: return fetchMoving ? max(base * 2.4, 100 * s) : 0
         case .fetchBall: return ballMoving ? (ballPhase == 0 ? max(base * 2.6, 140 * s) : max(base * 1.6, 70 * s)) : 0
         default: return 0
@@ -259,6 +278,7 @@ final class Pet {
             if pos.x < w.frame.minX - 10 || pos.x > w.frame.maxX + 10 { startAir(v: .zero); return }
         }
         let jumping = act == .inBed || act == .outOfBed || (act == .toBed && bedJumpT >= 0)
+            || (act == .hromada && (hromadaFaze == 2 || hromadaFaze == 4))
         if !jumping && pos.y > top + DogRenderer.ground * s + 20 * s {
             // zem pod ní zmizela (aplikace na celou obrazovku schovala Dock): spadne dolů
             startAir(v: .zero)
@@ -317,7 +337,7 @@ final class Pet {
             phase += dt * 1.2
         }
         let (lo, hi) = bounds()
-        if act == .toBed || act == .inBed || act == .outOfBed || act == .fetch {
+        if act == .toBed || act == .inBed || act == .outOfBed || act == .fetch || act == .hromada {
             // pelíšek stojí na Docku, k němu smí i kousek za běžnou hranici
         } else if surfaceId == 0 && (pos.x < lo - 2 || pos.x > hi + 2) {
             // mimo Dock (po pádu, hození…): vrať se pěšky, nepřeskakuj hranu
@@ -392,6 +412,8 @@ final class Pet {
             digLogic(dt)
         case .toBed:
             toBedLogic(dt)
+        case .hromada:
+            hromadaLogic(dt)
         case .fetch:
             fetchLogic(dt)
         case .fetchBall:
@@ -687,6 +709,12 @@ final class Pet {
         case 3: vitaniFaze = 0; setAct(.beg, 3.2); return
         default: break
         }
+        // roční období: k hromádce listí / k závěji zajde dvakrát až třikrát za den
+        if dalsiHromada <= 0 && hromadaX != nil && surfaceId == 0 {
+            dalsiHromada = CGFloat.random(in: 9000...16000)
+            startHromada()
+            return
+        }
         // denní režim (Karlovy poznámky 10. 10. 2026): přes den do pelíšku zřídka, večer a v noci
         // tam tráví hodně času; leží hlavně ráno po probuzení a pozdě večer, přes den málo
         let part = dayPart
@@ -695,6 +723,9 @@ final class Pet {
         if part == 1 && Int.random(in: 0..<100) < 14 { setAct(.lie, CGFloat.random(in: 3...6)); return }
         if part == 3 && Int.random(in: 0..<100) < 20 { setAct(.lie, CGFloat.random(in: 3...6)); return }
         if part == 1 && Int.random(in: 0..<100) < 20 { setAct(Bool.random() ? .stretch : .happy, 1.8); return }
+        // v létě se v poledne schovává před horkem: víc leží (skutečná Julie ležela ve stínu)
+        let sezona = obdobi
+        if sezona == .leto && (12..<16).contains(hodina) && Int.random(in: 0..<100) < 25 { setAct(.lie, CGFloat.random(in: 5...9)); return }
         // občas si sama pohraje s míčkem, který leží na Docku
         if let b = ball, !b.carried, !ballHeldByUser, surfaceId == 0, Int.random(in: 0..<100) < 8 { startFetchBall(); return }
         if speedNow > 20 && act != .walk && act != .sniff { }
@@ -707,7 +738,7 @@ final class Pet {
             startEgg(nil)
             return
         }
-        if r < 28 { setAct(.walk, CGFloat.random(in: 3...8)) }
+        if r < (sezona == .jaro ? 34 : 28) { setAct(.walk, CGFloat.random(in: 3...8)) }    // na jaře víc chodí
         else if r < 40 { setAct(.sit, CGFloat.random(in: 3...6)) }
         else if r < 46 { setAct(part == 2 && Bool.random() ? .sit : .lie, 2) }
         else if r < 51 { setAct(.sniff, CGFloat.random(in: 2.5...5)) }
@@ -717,7 +748,9 @@ final class Pet {
         else if r < 73 { setAct(.look, CGFloat.random(in: 2.5...4)) }
         else if r < 78 { setAct(.bark, 1.7); say(["Haf!", "Haf haf!", "Kdo to?!"].randomElement()!, 1.4) }
         else if r < 86 && abs(inp.mouse.x - pos.x) > 200 * s && cfg.eyeTracking { setAct(.follow, 9); say("Jdu za tebou!", 1.6) }
-        else if r < 86 + [1, 4, 2, 2][part] && cfg.mischief && surfaceId == 0 { setAct(.dig, 4.6) }   // nora: přes den ~18×/h, večer ~4×/h
+        else if r < 86 + (sezona == .podzim ? [1, 2, 1, 1] : [1, 4, 2, 2])[part] && cfg.mischief && surfaceId == 0 {
+            setAct(.dig, 4.6)       // nora: přes den ~18×/h, večer ~4×/h; na podzim ji láká spíš listí
+        }
         else if cfg.windowPlatforms && startClimbIfPossible() { }
         else { setAct(.walk, CGFloat.random(in: 3...7)) }
     }
@@ -828,6 +861,163 @@ final class Pet {
         pos.x = jumpFrom.x + (jumpTo.x - jumpFrom.x) * e
         pos.y = lin + (peak - max(jumpFrom.y, jumpTo.y)) * sin(u * .pi) + (max(jumpFrom.y, jumpTo.y) - lin) * sin(u * .pi) * 0.6
         return u >= 1
+    }
+
+    // MARK: roční období
+
+    /// Roční období podle data v Macu (samotest a měření si nastaví měsíc samy).
+    private var obdobiCache = (o: Obdobi.podzim, at: -999.0 as CGFloat)
+    var obdobi: Obdobi {
+        if let m = simMesic { return Obdobi.podle(mesice: m, pasmo: simPasmo ?? .current) }
+        if clock - obdobiCache.at > 60 || obdobiCache.at < 0 {
+            obdobiCache = (Obdobi.podle(mesice: Calendar.current.component(.month, from: Date())), clock)
+        }
+        return obdobiCache.o
+    }
+
+    /// Co teď leží na Docku: listí (podzim, od rána do večera), závěj (zima), nebo nic.
+    /// Vypíná se spolu s darebáctvím (nory, překvapení).
+    var hromadaDruh: Obdobi? {
+        if let u = ukazkaObdobi { return u }
+        guard cfg.mischief else { return nil }
+        switch obdobi {
+        case .podzim: return dayPart == 0 ? nil : .podzim
+        case .zima: return .zima
+        default: return nil
+        }
+    }
+
+    /// Kde hromádka leží (střed spodní hrany): na Docku na straně pelíšku, kousek od kraje.
+    /// Na krátkém Docku (není kde se rozběhnout) žádná není.
+    var hromadaX: CGFloat? {
+        guard hromadaDruh != nil else { return nil }
+        let (lo, hi) = dockBounds()
+        guard hi - lo > 80 * pixel else { return nil }
+        let vpravo = (bedX ?? env.dockR) > (env.dockL + env.dockR) / 2
+        let x = vpravo ? hi - 24 * pixel : lo + 24 * pixel
+        return (x / pixel).rounded() * pixel
+    }
+
+    /// Obrázek hromádky na Docku; nil, když žádná není nebo když je v ní Julie (je ve snímku Julie).
+    var hromadaSnimek: String? {
+        guard let d = hromadaDruh, hromadaX != nil else { return nil }
+        if act == .hromada && hromadaFaze == 3 && mode == .ground { return nil }
+        if d == .zima { return "snih_zavej" }
+        return hromadaVyska == 0 ? "listi_hromada" : "listi_hromada\(hromadaVyska)"
+    }
+
+    /// Zajde k hromádce listí / k závěji a skočí do ní.
+    func startHromada() {
+        guard mode == .ground, surfaceId == 0, hromadaX != nil else { return }
+        fx.hideSquirrel()
+        setAct(.hromada, 999)
+        hromadaFaze = 0
+        hromadaT = 0
+        hromadaMoving = false
+    }
+
+    /// Nabídka Překvapení: ukáže skok do listí nebo do závěje i mimo sezónu.
+    func ukazHromadu(_ o: Obdobi) {
+        ukazkaObdobi = o
+        startHromada()
+    }
+
+    /// Na kterou stranu od středu Docku hromádka leží (+1 vpravo).
+    private var hromadaKraj: CGFloat {
+        let (lo, hi) = dockBounds()
+        return (hromadaX ?? hi) > (lo + hi) / 2 ? 1 : -1
+    }
+
+    /// Kde střed Julie stojí, aby snímek „uvnitř“ (i s listím nebo závějí) seděl přesně na hromádce.
+    /// Snímky jsou zarovnané podle hlavy (viz DogRenderer.sprite), proto se posune o rozdíl šířek.
+    private func uvnitrX(_ hx: CGFloat, _ snimek: String) -> CGFloat {
+        let w = CGFloat(DogRenderer.frames[snimek]?.width ?? 44)
+        return hx - facing * ((DogRenderer.standWidth / 2).rounded() - w / 2) * pixel
+    }
+
+    private func hromadaLogic(_ dt: CGFloat) {
+        guard let hx = hromadaX, let druh = hromadaDruh else { setAct(.sit, 1); return }
+        hromadaT += dt
+        let t = hromadaT
+        let kraj = hromadaKraj
+        let start = hx - kraj * 44 * pixel                 // odkud skáče (blíž ke středu Docku)
+        let floor = surfaceTop() ?? env.floorY
+        let stred = CGPoint(x: hx, y: floor + 5 * pixel)
+        let podzim = druh == .podzim
+        hromadaMoving = false
+        switch hromadaFaze {
+        case 0:
+            // dojde na místo odrazu
+            let dx = start - pos.x
+            if abs(dx) > 3 * pixel {
+                walkDir = dx > 0 ? 1 : -1
+                hromadaMoving = true
+            } else {
+                speedNow = 0
+                facing = kraj
+                hromadaFaze = 1; hromadaT = 0
+            }
+            if t > 40 { setAct(.sit, 1) }
+        case 1:
+            // očichá listí (u závěje se nejdřív zastaví a podívá), pak skočí
+            facing = kraj
+            if t > (podzim ? 1.4 : 1.1) {
+                jumpFrom = pos
+                jumpTo = CGPoint(x: uvnitrX(hx, podzim ? "listi_uvnitr" : "snih_nori"), y: pos.y)
+                hromadaFaze = 2; hromadaT = 0
+            }
+        case 2:
+            // skok obloukem dovnitř; listí nebo sníh se rozletí
+            if jumpArc(t, dur: 0.5) {
+                hromadaFaze = 3; hromadaT = 0
+                qv += 1.5
+                if podzim { fx.listi(at: stred, px: pixel, kolik: 16) } else { fx.snih(at: stred, px: pixel, kolik: 14) }
+            }
+        case 3:
+            // v listí se vrtí a šustí; ze závěje kouká jen vrtící se ocas
+            pos.x = uvnitrX(hx, hromadaFrame)
+            if podzim && Int(t * 2.5) != Int((t - dt) * 2.5) { fx.listi(at: stred, px: pixel, kolik: 3) }
+            if t > hromadaUvnitr {
+                if podzim { hromadaVyska = min(2, hromadaVyska + 1) }      // listí se rozházelo
+                facing = -kraj
+                jumpFrom = pos
+                jumpTo = CGPoint(x: start, y: pos.y)
+                hromadaFaze = 4; hromadaT = 0
+                if podzim { fx.listi(at: stred, px: pixel, kolik: 8) } else { fx.snih(at: stred, px: pixel, kolik: 10) }
+            }
+        case 4:
+            // vyskočí zpátky na Dock
+            if jumpArc(t, dur: 0.5) { hromadaFaze = 5; hromadaT = 0; qv += 1.2 }
+        default:
+            // otřepe se, opadá z ní listí / sníh
+            if t < 0.9 && Int(t * 8) != Int((t - dt) * 8) {
+                let p = CGPoint(x: pos.x + CGFloat.random(in: -16...16) * pixel, y: floor + 12 * pixel)
+                if podzim { fx.listi(at: p, px: pixel, kolik: 1) } else { fx.snih(at: p, px: pixel, kolik: 2) }
+            }
+            if t > 1.2 {
+                setAct(.walk, CGFloat.random(in: 2...4))
+                walkDir = -kraj
+            }
+        }
+    }
+
+    /// Jak dlouho zůstane uvnitř (v závěji déle: kouká jen ocas).
+    private var hromadaUvnitr: CGFloat { hromadaDruh == .zima ? 3.6 : 2.6 }
+
+    private var hromadaFrame: String {
+        let podzim = hromadaDruh != .zima
+        let t = hromadaT
+        switch hromadaFaze {
+        case 0: return speedNow > 6 * s ? walkFrame : "stoji"
+        case 1: return podzim || t > 0.5 ? "cuch" : "stoji"
+        case 2, 4: return DogRenderer.frames["skok"] != nil ? "skok" : "skace"
+        case 3:
+            if podzim { return "listi_uvnitr" }
+            // zanoří se, pak kouká jen ocas a vrtí (dvě polohy), nakonec se vyhrabe ven
+            if t < 0.45 || t > hromadaUvnitr - 0.35 { return "snih_nori" }
+            return "snih_ocas\(Int(t / 0.16) % 2)"
+        default: return podzim ? "listi_otrepani" : "snih_otrepani"
+        }
     }
 
     // MARK: pamlsek u kurzoru (⌃⌥P)
@@ -968,15 +1158,19 @@ final class Pet {
     var pozorovatel: ((Act) -> Void)?
 
     /// 0 noc (22–7), 1 ráno (7–10), 2 den, 3 večer (19–22)
-    private var dayPartCache = (part: 2, at: -999.0 as CGFloat)
-    var dayPart: Int {
+    private var dayPartCache = (part: 2, hour: 12, at: -999.0 as CGFloat)
+    private func refreshDay() {
         if clock - dayPartCache.at > 60 || dayPartCache.at < 0 {
             let h = simHodina.map { Int($0) % 24 } ?? Calendar.current.component(.hour, from: Date())
             let part = (h >= 22 || h < 7) ? 0 : (h < 10 ? 1 : (h >= 19 ? 3 : 2))
-            dayPartCache = (part, clock)
+            dayPartCache = (part, h, clock)
+            // nový den: hromádka listí je zase celá
+            let den = simHodina.map { Int($0) / 24 } ?? (Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 0)
+            if den != hromadaDen { hromadaDen = den; hromadaVyska = 0 }
         }
-        return dayPartCache.part
     }
+    var dayPart: Int { refreshDay(); return dayPartCache.part }
+    var hodina: Int { refreshDay(); return dayPartCache.hour }
     var daySpeed: CGFloat { [0.75, 1.15, 1.0, 0.9][dayPart] }
     /// Jak dlouho zůstane v pelíšku, když si tam zajde sama.
     var bedStay: CGFloat {
@@ -993,7 +1187,7 @@ final class Pet {
         guard mode == .ground else { return }
         // Claude skončil nebo čeká na tebe a Julie spí v pelíšku (poslal ji tam dlouhou prací): vstane
         if (tok == "done" || tok == "notify") && act == .inBed && !bedUntilClick { leaveBed(); return }
-        let busy: [Act] = [.dig, .inBed, .toBed, .outOfBed, .fetch, .fetchBall, .squirrel, .sausage, .petted, .shake, .dizzy, .beg]
+        let busy: [Act] = [.dig, .inBed, .toBed, .outOfBed, .fetch, .fetchBall, .squirrel, .sausage, .petted, .shake, .dizzy, .beg, .hromada]
         if busy.contains(act) { return }
         let important = tok == "notify" || tok == "done"
         if !important && clock - lastClaudeReact < 6 { return }
@@ -1500,6 +1694,7 @@ final class Pet {
 
     func poke() {
         guard mode == .ground, act != .inBed else { return }
+        if act == .hromada && !canInterrupt { return }      // ve skoku nebo v listí / v závěji
         if act == .sleep || act == .lie { setAct(.stretch, 1.6); say("Hm? Už je ráno? 🥱", 2) ; return }
         setAct(.bark, 1.3)
         say(["Haf!", "Haf haf!", "Pamlsek? 🌭", "Nešahat… no dobře, šahat."].randomElement()!, 1.8)
@@ -1512,7 +1707,7 @@ final class Pet {
             fx.heart(at: CGPoint(x: pos.x, y: pos.y + 12 * pixel))
             return
         }
-        if act == .dig || act == .sausage || act == .squirrel { return }
+        if act == .dig || act == .sausage || act == .squirrel || (act == .hromada && !canInterrupt) { return }
         if act == .petted { actDur = max(actDur, actT + 2.5); return }
         setAct(.petted, 3)
         heartT = 0
@@ -1564,6 +1759,7 @@ final class Pet {
         switch act {
         case .dig: return burrowPhase == 0 || burrowPhase == 7
         case .toBed: return bedJumpT < 0
+        case .hromada: return hromadaFaze < 2 || hromadaFaze == 5     // ne ve skoku ani uvnitř
         case .inBed, .outOfBed: return false
         default: return true
         }
@@ -1690,6 +1886,13 @@ final class Pet {
             return "lezi"
         case .inBed:
             return curl(awake: t < 1.6)
+        case .hromada:
+            if hromadaFaze == 5 {                    // otřepání jako po noře
+                let u = min(1, hromadaT / 0.9)
+                p.rot = sin(hromadaT * 42) * 0.07 * (1 - u)
+            }
+            if hromadaFaze == 3 && hromadaDruh != .zima { p.squash = abs(sin(hromadaT * 9)) * 0.04 }   // vrtí se v listí
+            return hromadaFrame
         }
     }
 }
