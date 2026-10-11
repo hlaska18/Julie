@@ -31,7 +31,7 @@ More animations (burrow, treats, fetch, bed, parachute, squirrel) are on the [we
 - **treat**: press ⌃⌥P (Control-Option-P) – a dog biscuit appears at your cursor and she comes for it;
   if it is too high she begs on her hind legs
 - **ball**: press ⌃⌥M or grab the ball and throw it – she fetches it and brings it back to your cursor
-- **pet her**: move the cursor back and forth over her
+- **pet her**: move the cursor back and forth over her – she rolls onto her back and wriggles, hearts float up
 - now and then: a squirrel to chase, a treat rain, balloons
 - day mode: sleepier in the evening and at night, livelier in the morning
 - seasons, like the real Julie: in autumn a pile of leaves lies on the Dock and she jumps into it

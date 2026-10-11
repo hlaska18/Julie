@@ -80,7 +80,7 @@ nebo probuzení po aspoň 15 minutách) přivítá: štěkne, přiběhne pod kur
 v Nastavení „Vítat mě po návratu k Macu“).
 
 Ovládání (je i v menu 🦴 → Jak na Julii):
-- **pohladit**: přejížděj kurzorem po Julii sem a tam → lehne si, vyletí srdíčka
+- **pohladit**: přejížděj kurzorem po Julii sem a tam → převalí se na záda a vrtí se, vyletí srdíčka
 - **pamlsek**: ⌃⌥P → pamlsek u kurzoru, Julie si pro něj přijde; vysoko panáčkuje (po 3 pokusech
   čeká vsedě); další ⌃⌥P ho pustí. Menu 🦴 → Dát pamlsek → spadne na Dock
 - **míček**: ⌃⌥M nebo ho chyť myší a hoď → úklona k hraní, doběhne, přinese ho pod kurzor

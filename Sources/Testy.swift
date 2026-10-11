@@ -456,6 +456,26 @@ func runSelfTest() -> Bool {
                  String(format: "%.1f s, odchylka %.1f b., ", t, sedi) + snimky.sorted().joined(separator: ","))
     }
 
+    // 9n) hlazení: lehne si, překulí se přes bok na záda, vrtí se, překulí se zpátky a otřepe se
+    do {
+        let (pet, fx, env) = novy()
+        naZemi(pet, env)
+        pet.petted()
+        var poradi: [String] = []
+        var t: CGFloat = 0
+        while t < 6 && [.petted, .shake].contains(pet.act) {
+            if t > 1 && t < 2 { pet.petted() }               // hladí dál: válení se prodlouží
+            Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30
+            if ![.petted, .shake].contains(pet.act) { break }
+            let f = pet.act == .petted ? pet.buildPose().frame : "\(pet.act)"
+            if poradi.last != f { poradi.append(f) }
+        }
+        let i = { (n: String) in poradi.firstIndex(of: n) ?? -1 }
+        let ok = i("lezi") == 0 && i("valeni_bok") == 1 && i("valeni_zada0") == 2 && poradi.contains("valeni_zada1")
+            && poradi.suffix(2) == ["valeni_bok", "shake"] && t > 3.5
+        vysledek("hlazení: válí se na zádech, pak se otřepe", ok, String(format: "%.1f s, ", t) + poradi.prefix(4).joined(separator: ",") + "…" + poradi.suffix(2).joined(separator: ","))
+    }
+
     // 10) všechny jazyky mají všechny texty
     do {
         let klice = Set(Texty.tabulka["cs"]!.keys)

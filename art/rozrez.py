@@ -145,3 +145,5 @@ if __name__ == "__main__":
     cuch_chuze.main()
     import obdobi                     # roční období: hromádka listí a závěj (Karel 11. 10. 2026)
     obdobi.main()
+    import valeni                     # válení na zádech při hlazení (varianta A, Karel 11. 10. 2026)
+    valeni.main()

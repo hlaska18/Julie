@@ -1883,7 +1883,12 @@ final class Pet {
             p.rot = sin(t * 42) * 0.08 * (1 - u)
             return "stoji"
         case .petted:
-            return "lezi"
+            // válí sudy (skutečná Julie se při mazlení válela): lehne si, překulí se přes bok na záda
+            // a vrtí se; než vstane, překulí se zpátky na bok
+            guard DogRenderer.frames["valeni_zada0"] != nil else { return "lezi" }
+            if t < 0.3 { return "lezi" }
+            if t < 0.7 || actDur - t < 0.35 { return "valeni_bok" }
+            return Int((t - 0.7) / 0.22) % 2 == 0 ? "valeni_zada0" : "valeni_zada1"
         case .inBed:
             return curl(awake: t < 1.6)
         case .hromada:
