@@ -69,10 +69,12 @@ Novou pózu: vygeneruj list se stojící Julií jako 1. snímkem, přidej ho do 
 Julie nemluví a nemá bubliny; štěknutí ukazují pixelové zvukové vlny. Chodí jen po Docku
 a nepřejde jeho hranu. Leze po hranách oken a jezdí s nimi. Po chycení myší visí za kůži;
 po puštění dopadne **bez odrážení** a otřepe se. Puštěná vysoko (nad polovinou obrazovky,
-u obrazovky na výšku nad třetinou) se snese na **padáčku**. Čuchá, drbe se, štěká, spí,
+u obrazovky na výšku nad třetinou) se snese na **padáčku**. Čuchá (i s nosem u země sem a tam), drbe se, štěká, spí,
 hrabe noru (očichá, hrabe – tlapky se střídají, hlína letí dozadu na kupku –, zanoří se hlavou
 napřed a vyleze jinde přímo z díry). Pelíšek vedle Docku (spí v klubíčku), pamlsky, míček (aport),
-veverka (sprint s vyplazeným jazykem), balónky, hlazení, denní režim.
+veverka (sprint s vyplazeným jazykem), balónky, hlazení, denní režim. Po návratu k Macu (odemčení
+nebo probuzení po aspoň 15 minutách) přivítá: štěkne, přiběhne pod kurzor a zapanáčkuje (vypnout
+v Nastavení „Vítat mě po návratu k Macu“).
 
 Ovládání (je i v menu 🦴 → Jak na Julii):
 - **pohladit**: přejížděj kurzorem po Julii sem a tam → lehne si, vyletí srdíčka
@@ -86,7 +88,9 @@ Ovládání (je i v menu 🦴 → Jak na Julii):
 - **uspat (schovat)**: menu 🦴 → Uspat → na hodinu / do zítřka / dokud ji zase nezapnu
   (platí i po restartu Macu; probudí se v menu 🦴 → Probudit Julii)
 
-Denní režim: v noci (22–7) a večer víc spí a chodí do pelíšku, ráno je čilejší.
+Denní režim podle Karlových poznámek (měřeno `--mereni`): přes den nora asi 18× a pelíšek asi 13×
+za hodinu, večer nora asi 4× a v pelíšku tráví většinu času; leží hlavně ráno a pozdě večer.
+Pelíšek: Nastavení → Zarovnat pelíšek ke kraji Docku (počítá se zvětšováním ikon Docku).
 Spouští se po přihlášení (`~/Library/LaunchAgents/cz.karelhlas.julie.plist`; nový uživatel volí v úvodním okně, vypnout v Nastavení).
 Volitelně (Nastavení): připomenutí přestávky po 50 minutách práce v kuse (přiběhne pod kurzor
 a štěkne); zvonění: do json `"zvoneni": ["8:45", "9:40"]` – 2 minuty před zvoněním se protáhne.

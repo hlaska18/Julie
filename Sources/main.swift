@@ -126,10 +126,24 @@ final class AppController: NSObject, NSApplicationDelegate {
 
     // MARK: schovávání (celá obrazovka, zrcadlení, spánek displeje, zámek, uspání z menu)
 
-    @objc func displaySlept() { displayAsleep = true }
-    @objc func displayWoke() { displayAsleep = false; last = CACurrentMediaTime() }
-    @objc func screenLocked() { locked = true }
-    @objc func screenUnlocked() { locked = false; last = CACurrentMediaTime() }
+    @objc func displaySlept() { displayAsleep = true; if odchodOd == nil { odchodOd = Date() } }
+    @objc func displayWoke() { displayAsleep = false; last = CACurrentMediaTime(); zkontrolujNavrat() }
+    @objc func screenLocked() { locked = true; if odchodOd == nil { odchodOd = Date() } }
+    @objc func screenUnlocked() { locked = false; last = CACurrentMediaTime(); zkontrolujNavrat() }
+
+    /// Od kdy je Mac zamčený nebo s uspanou obrazovkou; po návratu (aspoň 15 min pryč) Julie přivítá.
+    /// Nečinnost sama nestačí: při čtení nebo promítání ve třídě by štěkala přede všemi (rada 7. 10.).
+    var odchodOd: Date?
+    var vitatOd: CFTimeInterval = 0
+
+    func zkontrolujNavrat() {
+        guard !locked && !displayAsleep, let od = odchodOd else { return }
+        odchodOd = nil
+        let pryc = Date().timeIntervalSince(od)
+        guard cfg.greetOnReturn, pryc >= 15 * 60 else { return }
+        vitatOd = CACurrentMediaTime() + 1.5          // chvilku po objevení
+        zapis(String(format: "návrat po %.0f min: přivítání", pryc / 60))
+    }
 
     var pausedUntil: Date? {
         if cfg.pausedForever { return Date.distantFuture }
@@ -237,6 +251,10 @@ final class AppController: NSObject, NSApplicationDelegate {
         let hide = shouldHide
         if hide != isHidden { setHidden(hide) }
         if hide { setFPS(2); return }
+        // přivítání po návratu: jakmile to jde (ne ve vzduchu, pod zemí…), nejdéle 20 s
+        if vitatOd > 0 && now >= vitatOd {
+            if pet.vitej() || now - vitatOd > 20 { vitatOd = 0 }
+        }
         if pet.needsWindows { env.refreshWindows() }
         if cfg.claudeWatch {
             watchTick += rawDt
@@ -576,10 +594,11 @@ final class AppController: NSObject, NSApplicationDelegate {
             item(t("fullscreen", ""), #selector(toggleFullscreen), checked: cfg.showInFullscreen),
             item(t("projector", ""), #selector(toggleExternalMain), checked: cfg.hideOnExternalMain),
             item(t("break", ""), #selector(toggleBreak), checked: cfg.breakReminder),
+            item(t("greet", ""), #selector(toggleGreet), checked: cfg.greetOnReturn),
             .separator()]
         settings.append(ClaudeHooks.installed ? item(t("claudeDisconnect", ""), #selector(claudeDisconnect))
                                               : item(t("claudeConnect", ""), #selector(claudeConnect)))
-        if cfg.bedDX != nil { settings.append(item(t("bedReset", ""), #selector(resetBed))) }
+        settings.append(item(t("bedReset", ""), #selector(resetBed)))
         settings.append(item(env.dockExact ? t("dockExact", "") : t("dockMeasure", ""), #selector(askAX)))
         m.addItem(submenu(t("settings", ""), settings))
         m.addItem(submenu(t("help", ""), ["h1", "h2", "h3", "h4", "h5", "h6"].map { info(t($0, "")) }))
@@ -661,8 +680,14 @@ final class AppController: NSObject, NSApplicationDelegate {
     @objc func unpause() { cfg.pausedUntil = nil; cfg.pausedForever = false; cfg.save(); rebuildMenu() }
     @objc func toggleExternalMain() { cfg.hideOnExternalMain.toggle(); persist() }
     @objc func toggleBreak() { cfg.breakReminder.toggle(); persist() }
+    @objc func toggleGreet() { cfg.greetOnReturn.toggle(); persist() }
     @objc func toggleAutostart() { cfg.autostart.toggle(); persist(); applyAutostart() }
-    @objc func resetBed() { cfg.bedDX = nil; cfg.bedDY = nil; pet.cfg.bedDX = nil; pet.cfg.bedDY = nil; persist() }
+    /// Zarovnat pelíšek ke kraji Docku: znovu změřit Dock a zrušit ruční posun (pelíšek pak stojí vedle Docku sám).
+    @objc func resetBed() {
+        env.refreshDock()
+        cfg.bedDX = nil; cfg.bedDY = nil; pet.cfg.bedDX = nil; pet.cfg.bedDY = nil; persist()
+        zapis(String(format: "pelíšek zarovnán: Dock %.0f–%.0f (%@), zvětšování +%.0f", env.dockL, env.dockR, env.dockExact ? "přesně" : "odhad", env.dockMagnifyExtra))
+    }
     @objc func toggleEyes() { cfg.eyeTracking.toggle(); persist() }
     @objc func togglePlatforms() { cfg.windowPlatforms.toggle(); persist() }
     @objc func toggleFullscreen() { cfg.showInFullscreen.toggle(); env.followFullscreen = cfg.showInFullscreen; env.applyFloor(); persist() }
@@ -675,11 +700,12 @@ final class AppController: NSObject, NSApplicationDelegate {
         guard size.width > 0 else { return nil }
         let f = env.screen.frame
         let band = env.floorY - f.minY
-        let gap: CGFloat = 14
-        let pillR = env.dockR + 10, pillL = env.dockL - 10
+        // podklad Docku sahá kousek za ikony; při zvětšování ikon se Dock ještě roztáhne
+        let gap: CGFloat = 18 + env.dockMagnifyExtra
+        let pillR = env.dockR + 12, pillL = env.dockL - 12
         if let dx = cfg.bedDX, let dy = cfg.bedDY {
             // přetažený myší: drží se vůči pravému konci Docku
-            let x = min(f.maxX - size.width / 2, max(f.minX + size.width / 2, pillR + CGFloat(dx)))
+            let x = min(f.maxX - size.width / 2, max(f.minX + size.width / 2, env.dockR + 10 + CGFloat(dx)))
             let y = min(f.maxY - size.height - 30, max(f.minY, f.minY + CGFloat(dy)))
             // stojí v pruhu Docku, ale je na něj moc vysoký: nezobrazovat
             if y < env.floorY - 1 && y + size.height > env.floorY + 1 { return nil }

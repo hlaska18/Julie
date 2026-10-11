@@ -328,6 +328,68 @@ func runSelfTest() -> Bool {
                  String(format: "vzhůru %.1f s, ve spánku %.1f s", vzhuru, pred - pet.nextEgg))
     }
 
+    // 9h) přivítání po návratu: štěkne, doběhne pod kurzor, zapanáčkuje
+    do {
+        let (pet, fx, env) = novy()
+        naZemi(pet, env, x: env.dockR - 150)
+        let mys = Input(mouse: CGPoint(x: env.dockL + 120, y: env.floorY + 120), typing: false)
+        let zacala = pet.vitej()
+        var poradi: [Act] = []
+        var t: CGFloat = 0
+        while t < 30 {
+            Pet.step(pet, fx, 1.0 / 30, mys, floorY: env.floorY); t += 1.0 / 30
+            if poradi.last != pet.act { poradi.append(pet.act) }
+            if pet.act == .beg { break }
+        }
+        let iB = poradi.firstIndex(of: .bark), iF = poradi.firstIndex(of: .follow), iP = poradi.firstIndex(of: .beg)
+        let ok = zacala && iB != nil && iF != nil && iP != nil && iB! < iF! && iF! < iP! && abs(pet.pos.x - mys.mouse.x) < 120
+        vysledek("přivítání: štěkne, doběhne pod kurzor a zapanáčkuje", ok, String(format: "%.1f s", t))
+    }
+
+    // 9i) přivítání z pelíšku: ze samovolného spaní vyskočí, uloženou člověkem nechá spát
+    do {
+        func doPeliseku(_ clovek: Bool) -> (Pet, Effects, Env) {
+            let (pet, fx, env) = novy()
+            naZemi(pet, env)
+            pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
+            if clovek { pet.bedToggle() } else { pet.goToBed(untilClick: false) }
+            var t: CGFloat = 0
+            while t < 30 && pet.act != .inBed { Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30 }
+            return (pet, fx, env)
+        }
+        let (a, fxa, enva) = doPeliseku(false)
+        let vstala = a.vitej()
+        var vyskocila = false, stekla = false
+        for _ in 0..<(30 * 8) {
+            Pet.step(a, fxa, 1.0 / 30, nikde, floorY: enva.floorY)
+            if a.act == .outOfBed { vyskocila = true }
+            if vyskocila && a.act == .bark { stekla = true; break }
+        }
+        let (b, _, _) = doPeliseku(true)
+        let spi = !b.vitej() && b.act == .inBed
+        vysledek("přivítání z pelíšku: sama vyskočí, uloženou člověkem nechá spát", vstala && vyskocila && stekla && spi)
+    }
+
+    // 9j) čmuchání po zemi: hlava dole, jde sem i tam, nepřejde kraj Docku
+    do {
+        let (pet, fx, env) = novy()
+        naZemi(pet, env, x: env.dockL + 120)
+        pet.snuffleMoving = false; pet.snuffleT = 0.3
+        pet.setAct(.snuffle, 40)
+        var smery = Set<Int>(), snimky = Set<String>(), mimo = false
+        let (lo, hi) = pet.bounds()
+        for _ in 0..<(30 * 30) {
+            Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY)
+            if pet.speedNow > 2 { smery.insert(pet.walkDir > 0 ? 1 : -1) }
+            snimky.insert(pet.buildPose().frame)
+            if pet.pos.x < lo - 3 || pet.pos.x > hi + 3 { mimo = true }
+        }
+        let hlavaDole = snimky.allSatisfy { $0.hasPrefix("cuch") }
+        let krok = snimky.filter { $0.hasPrefix("cuch_chuze") }.count >= 3
+        vysledek("čmuchání: hlava dole, jde sem i tam, nepřejde Dock", smery.count == 2 && hlavaDole && krok && !mimo,
+                 snimky.sorted().joined(separator: ","))
+    }
+
     // 10) všechny jazyky mají všechny texty
     do {
         let klice = Set(Texty.tabulka["cs"]!.keys)

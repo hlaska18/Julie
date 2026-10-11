@@ -141,3 +141,5 @@ if __name__ == "__main__":
     hrabani_tlapky.main()
     import zadni_nohy                 # zadní nohy při chůzi (varianta A, Karel 11. 10. 2026)
     zadni_nohy.main()
+    import cuch_chuze                 # čmuchání po zemi: hlava dole, nohy kráčejí
+    cuch_chuze.main()

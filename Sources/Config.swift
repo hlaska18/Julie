@@ -22,11 +22,12 @@ struct Config: Codable {
     var zvoneni: [String] = []      // časy zvonění "HH:MM" – 2 min předtím se protáhne
     var language = "auto"          // jazyk nabídky: auto, cs, en, de, sk, pl
     var welcomed = false            // úvodní okno už se ukázalo
+    var greetOnReturn = true        // po odemčení/probuzení Macu (pryč aspoň 15 min) přivítá
 
     init() {}
 
     enum CodingKeys: String, CodingKey {
-        case size, walkSpeed, gravity, claudeWatch, eyeTracking, windowPlatforms, mischief, dockWidth, bedX, showInFullscreen, autostart, bedDX, bedDY, pausedUntil, pausedForever, hideOnExternalMain, breakReminder, zvoneni, language, welcomed
+        case size, walkSpeed, gravity, claudeWatch, eyeTracking, windowPlatforms, mischief, dockWidth, bedX, showInFullscreen, autostart, bedDX, bedDY, pausedUntil, pausedForever, hideOnExternalMain, breakReminder, zvoneni, language, welcomed, greetOnReturn
     }
 
     init(from d: Decoder) throws {
@@ -51,6 +52,7 @@ struct Config: Codable {
         zvoneni = try c.decodeIfPresent([String].self, forKey: .zvoneni) ?? []
         language = try c.decodeIfPresent(String.self, forKey: .language) ?? "auto"
         welcomed = try c.decodeIfPresent(Bool.self, forKey: .welcomed) ?? false
+        greetOnReturn = try c.decodeIfPresent(Bool.self, forKey: .greetOnReturn) ?? true
         size = min(200, max(48, size))
         walkSpeed = min(3, max(0.3, walkSpeed))
         gravity = min(3, max(0.3, gravity))

@@ -23,6 +23,7 @@ final class Env {
     var fullscreen = false          // aktivní plocha je aplikace na celé obrazovce (Dock schovaný)
     var followFullscreen = false    // má Julie na celé obrazovce chodit po spodním okraji (jinak je schovaná)
     var dockAvailable = true        // Dock je dole na hlavní obrazovce a není schovaný
+    var dockMagnifyExtra: CGFloat = 0  // o kolik se Dock roztáhne při zvětšování ikon (pro mezeru k pelíšku)
     private var fullByWindow = false
 
     init() {
@@ -219,6 +220,10 @@ extension Env {
         CFPreferencesAppSynchronize("com.apple.dock" as CFString)
         let f = screen.frame, v = screen.visibleFrame
         let orient = (dockPref("orientation") as? String) ?? "bottom"
+        // zvětšování ikon pod kurzorem roztáhne Dock do stran: pelíšek musí stát o kus dál
+        let tileNow = CGFloat((dockPref("tilesize") as? NSNumber)?.doubleValue ?? 48)
+        let large = CGFloat((dockPref("largesize") as? NSNumber)?.doubleValue ?? Double(tileNow))
+        dockMagnifyExtra = ((dockPref("magnification") as? Bool) ?? false) ? min(60, max(0, large - tileNow) * 2) : 0
         let auto = (dockPref("autohide") as? Bool) ?? false
         // Dock vlevo/vpravo, schovaný nebo na jiném monitoru: Julie nemá kde chodit → schová se
         dockAvailable = orient == "bottom" && !auto && v.minY - f.minY > 20

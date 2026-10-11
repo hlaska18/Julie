@@ -20,6 +20,9 @@ More animations (burrow, treats, fetch, bed, parachute, squirrel) are on the [we
 ## What she does
 - walks along the top edge of the Dock (and never past its ends), sniffs, sits, lies down,
   scratches, stretches, barks (little pixel sound waves)
+- snuffles along the Dock with her nose to the ground, back and forth
+- greets you when you come back to your Mac after at least 15 minutes (unlock or wake): she barks,
+  runs to your cursor and begs for a cuddle or a treat (can be turned off in Settings)
 - digs a burrow, dives in head first, tunnels and pops out somewhere else
 - sleeps curled up in her bed next to the Dock – click the bed to send her to bed or wake her up
 - climbs onto windows and rides along when you move them

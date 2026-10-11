@@ -5,6 +5,8 @@ enum Mode { case ground, toClimb, climb, mantle, grab, air, balloon, parachute }
 enum Act {
     case walk, follow, sit, lie, sleep, sniff, scratch, stretch, bark, look, dig, scrabble, happy, dizzy
     case meteor, squirrel, sausage, shake, petted, toBed, inBed, outOfBed, fetch, fetchBall
+    case snuffle    // čmuchá po zemi: hlava dole, pomalu sem a tam
+    case beg        // panáčkuje (prosí o pomazlení nebo pamlsek)
 }
 
 struct Input {
@@ -70,6 +72,10 @@ final class Pet {
     var heartT: CGFloat = 0
     var bedUntilClick = false
     var toBedMoving = false
+    var snuffleMoving = false
+    var snuffleT: CGFloat = 0
+    /// Přivítání po návratu: 1 = vyskočit z pelíšku, 2 = štěknout, 3 = doběhnout pod kurzor, 0 = nic.
+    var vitaniFaze = 0
     var wantBed = false
     var bedJumpT: CGFloat = -1
     var bedPrepT: CGFloat = -1
@@ -235,10 +241,11 @@ final class Pet {
         let base = 55 * s * CGFloat(cfg.walkSpeed) * daySpeed
         switch act {
         case .walk: return base
-        case .follow: return base * 1.9
+        case .follow: return vitaniFaze == 3 ? max(base * 3, 150 * s) : base * 1.9   // na přivítanou běží
         case .squirrel: return sprinting ? 330 * s : 0
         case .sausage: return treatMoving ? max(base * 2.4, 110 * s) : 0   // pro pamlsek spěchá i večer
         case .toBed: return toBedMoving ? max(base * 2, 90 * s) : 0
+        case .snuffle: return snuffleMoving ? base * 0.45 : 0
         case .fetch: return fetchMoving ? max(base * 2.4, 100 * s) : 0
         case .fetchBall: return ballMoving ? (ballPhase == 0 ? max(base * 2.6, 140 * s) : max(base * 1.6, 70 * s)) : 0
         default: return 0
@@ -340,6 +347,14 @@ final class Pet {
     private func actSpecific(_ dt: CGFloat, _ inp: Input) {
         let t = actT
         switch act {
+        case .snuffle:
+            // kousek popojde s nosem u země, zastaví se, často se otočí a jde zpátky
+            snuffleT -= dt
+            if snuffleT <= 0 {
+                snuffleMoving.toggle()
+                snuffleT = snuffleMoving ? CGFloat.random(in: 0.9...2.2) : CGFloat.random(in: 0.4...1.1)
+                if snuffleMoving && Int.random(in: 0..<100) < 60 { walkDir = -walkDir }
+            }
         case .follow:
             let (flo, fhi) = bounds()
             let dx = min(fhi, max(flo, inp.mouse.x)) - pos.x
@@ -665,10 +680,20 @@ final class Pet {
         if wantBed && surfaceId == 0 { wantBed = false; goToBed(untilClick: true); return }
         // ležící pamlsek má přednost před vším ostatním
         if !fx.sausages.isEmpty && surfaceId == 0 { setAct(.sausage, 999); treatsToDrop = 0; return }
-        // denní režim: v noci a večer víc odpočívá, ráno je čilejší
+        // přivítání po návratu: štěkne, doběhne pod kurzor, zapanáčkuje
+        switch vitaniFaze {
+        case 1: vitaniFaze = 2; setAct(.bark, 1.3); return
+        case 2: vitaniFaze = 3; setAct(.follow, 20); return
+        case 3: vitaniFaze = 0; setAct(.beg, 3.2); return
+        default: break
+        }
+        // denní režim (Karlovy poznámky 10. 10. 2026): přes den do pelíšku zřídka, večer a v noci
+        // tam tráví hodně času; leží hlavně ráno po probuzení a pozdě večer, přes den málo
         let part = dayPart
-        if bedX != nil && surfaceId == 0 && Int.random(in: 0..<100) < [35, 4, 6, 15][part] { goToBed(untilClick: false); return }
+        if bedX != nil && surfaceId == 0 && Int.random(in: 0..<100) < [40, 2, 3, 25][part] { goToBed(untilClick: false); return }
         if part == 0 && Int.random(in: 0..<100) < 40 { setAct(.lie, 3); return }
+        if part == 1 && Int.random(in: 0..<100) < 14 { setAct(.lie, CGFloat.random(in: 3...6)); return }
+        if part == 3 && Int.random(in: 0..<100) < 20 { setAct(.lie, CGFloat.random(in: 3...6)); return }
         if part == 1 && Int.random(in: 0..<100) < 20 { setAct(Bool.random() ? .stretch : .happy, 1.8); return }
         // občas si sama pohraje s míčkem, který leží na Docku
         if let b = ball, !b.carried, !ballHeldByUser, surfaceId == 0, Int.random(in: 0..<100) < 8 { startFetchBall(); return }
@@ -684,14 +709,15 @@ final class Pet {
         }
         if r < 28 { setAct(.walk, CGFloat.random(in: 3...8)) }
         else if r < 40 { setAct(.sit, CGFloat.random(in: 3...6)) }
-        else if r < 46 { setAct(.lie, 2) }
-        else if r < 56 { setAct(.sniff, CGFloat.random(in: 2.5...5)) }
+        else if r < 46 { setAct(part == 2 && Bool.random() ? .sit : .lie, 2) }
+        else if r < 51 { setAct(.sniff, CGFloat.random(in: 2.5...5)) }
+        else if r < 56 { snuffleMoving = false; snuffleT = 0.3; setAct(.snuffle, CGFloat.random(in: 4...8)) }
         else if r < 61 { setAct(.scratch, 2.2) }
         else if r < 66 { setAct(.stretch, 1.8) }
         else if r < 73 { setAct(.look, CGFloat.random(in: 2.5...4)) }
         else if r < 78 { setAct(.bark, 1.7); say(["Haf!", "Haf haf!", "Kdo to?!"].randomElement()!, 1.4) }
         else if r < 86 && abs(inp.mouse.x - pos.x) > 200 * s && cfg.eyeTracking { setAct(.follow, 9); say("Jdu za tebou!", 1.6) }
-        else if r < 92 && cfg.mischief && surfaceId == 0 { setAct(.dig, 4.6) }
+        else if r < 86 + [1, 4, 2, 2][part] && cfg.mischief && surfaceId == 0 { setAct(.dig, 4.6) }   // nora: přes den ~18×/h, večer ~4×/h
         else if cfg.windowPlatforms && startClimbIfPossible() { }
         else { setAct(.walk, CGFloat.random(in: 3...7)) }
     }
@@ -955,8 +981,8 @@ final class Pet {
     /// Jak dlouho zůstane v pelíšku, když si tam zajde sama.
     var bedStay: CGFloat {
         switch dayPart {
-        case 0: return CGFloat.random(in: 90...240)
-        case 3: return CGFloat.random(in: 40...100)
+        case 0: return CGFloat.random(in: 240...600)
+        case 3: return CGFloat.random(in: 120...300)
         default: return CGFloat.random(in: 25...70)
         }
     }
@@ -967,7 +993,7 @@ final class Pet {
         guard mode == .ground else { return }
         // Claude skončil nebo čeká na tebe a Julie spí v pelíšku (poslal ji tam dlouhou prací): vstane
         if (tok == "done" || tok == "notify") && act == .inBed && !bedUntilClick { leaveBed(); return }
-        let busy: [Act] = [.dig, .inBed, .toBed, .outOfBed, .fetch, .fetchBall, .squirrel, .sausage, .petted, .shake, .dizzy]
+        let busy: [Act] = [.dig, .inBed, .toBed, .outOfBed, .fetch, .fetchBall, .squirrel, .sausage, .petted, .shake, .dizzy, .beg]
         if busy.contains(act) { return }
         let important = tok == "notify" || tok == "done"
         if !important && clock - lastClaudeReact < 6 { return }
@@ -1350,6 +1376,7 @@ final class Pet {
     // MARK: chycení myší
 
     func beginGrab(_ mouse: CGPoint) {
+        vitaniFaze = 0
         if ball?.carried == true { ball?.carried = false; ball?.vel = .zero }
         mode = .grab
         surfaceId = 0
@@ -1510,6 +1537,23 @@ final class Pet {
         say("Už běžím!", 1.5)
     }
 
+    /// Přivítání po návratu (Karlovy poznámky: když přijde domů, štěká na něj a chce se mazlit,
+    /// nejlépe za pamlsek): štěkne, doběhne pod kurzor a chvíli panáčkuje. Ze samovolného spaní
+    /// v pelíšku vyskočí; když ji do pelíšku uložil člověk, nechá ji spát. Vrací false, když to teď nejde.
+    @discardableResult func vitej() -> Bool {
+        guard mode == .ground, surfaceId == 0 else { return false }
+        if act == .inBed {
+            if bedUntilClick { return false }
+            vitaniFaze = 1
+            leaveBed()
+            return true
+        }
+        guard canInterrupt, ![.fetch, .sausage, .fetchBall, .squirrel].contains(act) else { return false }
+        vitaniFaze = 2
+        setAct(.bark, 1.3)
+        return true
+    }
+
     /// Přivolání čeká, až půjde činnost bezpečně přerušit (nejdéle 20 s).
     var pendingCallUntil: CGFloat = -1
 
@@ -1610,6 +1654,13 @@ final class Pet {
             p.squash = 0.03 + sin(clock * 2) * 0.03
             return "spi"
         case .sniff: return "cuch"
+        case .snuffle:
+            guard speedNow > 2, DogRenderer.frames["cuch_chuze0"] != nil else { return "cuch" }
+            return "cuch_chuze\(Int((phase * 1.3 / (.pi / 2)).rounded(.down)) & 3)"
+        case .beg:
+            let a = DogRenderer.frames["panacek0"] != nil ? "panacek0" : "sedi"
+            let b = DogRenderer.frames["panacek1"] != nil ? "panacek1" : "stekot"
+            return Int(actT / 0.4) % 2 == 0 ? a : b
         case .scratch: return alt == 0 ? "drbe0" : "drbe1"
         case .stretch: return "protahuje"
         case .bark:
