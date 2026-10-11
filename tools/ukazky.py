@@ -11,13 +11,13 @@ snímek pro „omezit pohyb“). Potřebuje Pillow a sestavenou aplikaci (./buil
 import os, sys, shutil, subprocess, tempfile
 from PIL import Image
 
-SCENY = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka"]
+SCENY = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka", "hlazeni"]
 APP = os.path.expanduser("~/Applications/Julie.app/Contents/MacOS/Julie")
 KOREN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CIL = os.path.join(KOREN, "docs", "ukazky")
 FPS = 25
 # klidový snímek: kolikátá vteřina scény
-KLID = {"chuze": 3.9, "nora": 2.0, "pamlsky": 3.0, "micek": 2.6, "pelisek": 4.0, "padak": 1.5, "veverka": 2.2}
+KLID = {"chuze": 3.9, "nora": 2.0, "pamlsky": 3.0, "micek": 2.6, "pelisek": 4.0, "padak": 1.5, "veverka": 2.2, "hlazeni": 3.0}
 
 
 def gif(sc, slozka):

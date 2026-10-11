@@ -139,3 +139,5 @@ if __name__ == "__main__":
     # hrabání se skládá z jednoho snímku a ručně kreslených tlapek (snímky hrabe0–3)
     import hrabani_tlapky
     hrabani_tlapky.main()
+    import zadni_nohy                 # zadní nohy při chůzi (varianta A, Karel 11. 10. 2026)
+    zadni_nohy.main()

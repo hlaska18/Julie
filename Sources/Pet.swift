@@ -1114,7 +1114,9 @@ final class Pet {
         case 1:
             if DogRenderer.frames["mic_stoji"] == nil { return moving ? walkFrame : "stoji" }
             if !moving { return "mic_stoji" }
-            return Int((phase * 1.3 / (.pi / 2)).rounded(.down)) & 1 == 0 ? "mic_chuze0" : "mic_chuze1"
+            // čtyři fáze kroku (zadní nohy domalované art/zadni_nohy.py); starší sada má jen dvě
+            let k = Int((phase * 1.3 / (.pi / 2)).rounded(.down)) & 3
+            return DogRenderer.frames["mic_chuze\(k)"] != nil ? "mic_chuze\(k)" : (k & 1 == 0 ? "mic_chuze0" : "mic_chuze1")
         default: return "sedi"
         }
     }
