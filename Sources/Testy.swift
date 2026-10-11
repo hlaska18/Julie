@@ -426,7 +426,7 @@ func runSelfTest() -> Bool {
             naZemi(pet, env)
             pet.bedSpot = CGPoint(x: env.dockR + 70, y: env.screen.frame.minY + 14)
             pet.ukazHromadu(o)
-            return pet.muzeSkocit(o) && pet.act == .hromada
+            return pet.vSezone(o) && pet.act == .hromada
         }
         let ok = zkus(10, .podzim) && !zkus(10, .zima) && zkus(1, .zima) && !zkus(1, .podzim) && !zkus(7, .podzim) && !zkus(4, .zima)
         vysledek("nabídka: skok do listí jen na podzim, do závěje jen v zimě", ok)
@@ -488,6 +488,35 @@ func runSelfTest() -> Bool {
         let ok = i("lezi") == 0 && i("valeni_bok") == 1 && i("valeni_zada0") == 2 && poradi.contains("valeni_zada1")
             && poradi.suffix(2) == ["valeni_bok", "shake"] && t > 3.5
         vysledek("hlazení: válí se na zádech, pak se otřepe", ok, String(format: "%.1f s, ", t) + poradi.prefix(4).joined(separator: ",") + "…" + poradi.suffix(2).joined(separator: ","))
+    }
+
+    // 9o) padání listí a sněhu: padá nad Dock, Julie chňape, zbytek dopadne na Dock a zmizí; mimo sezónu nic
+    for mesic in [10, 1, 7] {
+        let (pet, fx, env) = novy()
+        fx.treatRange = (env.dockL + 20)...(env.dockR - 20)
+        pet.simMesic = mesic; pet.simPasmo = TimeZone(identifier: "Europe/Prague")
+        naZemi(pet, env)
+        let druh: Obdobi = mesic == 1 ? .zima : .podzim
+        pet.startPadani(druh)
+        if mesic == 7 {
+            vysledek("padání listí v červenci nezačne", pet.act != .chyta && !fx.padaniBezi)
+            continue
+        }
+        var nejvic = 0, dopadlo = 0, mimo = false, konec: Act = .chyta
+        var t: CGFloat = 0
+        while t < 90 {
+            Pet.step(pet, fx, 1.0 / 30, nikde, floorY: env.floorY); t += 1.0 / 30
+            nejvic = max(nejvic, fx.padajici.count)
+            dopadlo = max(dopadlo, fx.padajici.filter { $0.landed }.count)
+            for v in fx.padajici where v.pos.x < env.dockL + 19 || v.pos.x > env.dockR - 19 { mimo = true }
+            if pet.act != .chyta && konec == .chyta { konec = pet.act }
+            if konec != .chyta && fx.padajici.isEmpty { break }
+            RunLoop.main.run(until: Date())
+        }
+        let ok = nejvic > 10 && dopadlo > 0 && fx.chyceno >= 1 && !mimo && fx.padajici.isEmpty
+            && konec == (druh == .zima ? .shake : .happy)
+        vysledek(druh == .zima ? "padání sněhu: chňape po vločkách, pak se otřepe" : "padání listí: chňape po lístcích, pak poskočí", ok,
+                 String(format: "%.0f s, naráz %d, chytila %d, dopadlo %d", t, nejvic, fx.chyceno, dopadlo))
     }
 
     // 10) všechny jazyky mají všechny texty

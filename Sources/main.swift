@@ -573,7 +573,7 @@ final class AppController: NSObject, NSApplicationDelegate, NSMenuItemValidation
                 item(t("sleepTomorrow", ""), #selector(pauseTomorrow)),
                 item(t("sleepForever", ""), #selector(pauseForever))]))
         }
-        m.addItem(submenu(t("surprise", ""), ["balloons", "squirrel", "treatRain", "burrow", "leafPile", "snowDrift"].enumerated().map { item(t($1, ""), #selector(runEgg(_:)), tag: $0) }))
+        m.addItem(submenu(t("surprise", ""), ["balloons", "squirrel", "treatRain", "burrow", "leafPile", "snowDrift", "leafFall", "snowFall"].enumerated().map { item(t($1, ""), #selector(runEgg(_:)), tag: $0) }))
         let sizes = [("small", 56), ("medium", 80), ("large", 110), ("huge", 150)].enumerated().map { i, v in
             item(t(v.0, ""), #selector(setSize(_:)), checked: Int(cfg.size) == v.1, tag: i) }
         let speeds = ["slow", "normal", "fast"].enumerated().map { i, n in
@@ -826,16 +826,18 @@ final class AppController: NSObject, NSApplicationDelegate, NSMenuItemValidation
         case 0, 1, 2: pet.startEgg(s.tag)
         case 4: pet.ukazHromadu(.podzim)     // skok do listí (jen na podzim)
         case 5: pet.ukazHromadu(.zima)       // skok do závěje (jen v zimě)
+        case 6: pet.startPadani(.podzim)     // padání listí (jen na podzim)
+        case 7: pet.startPadani(.zima)       // padání sněhu (jen v zimě)
         default: pet.setAct(.dig, 4.6)       // Nora
         }
     }
-    /// Skok do listí jde jen na podzim a do závěje jen v zimě, jinak je položka šedá
-    /// (kontroluje se při každém otevření nabídky, takže se sama přepne podle data).
+    /// Listí (skok, padání) jde jen na podzim a sníh (závěj, sněžení) jen v zimě, jinak je položka
+    /// šedá (kontroluje se při každém otevření nabídky, takže se sama přepne podle data).
     func validateMenuItem(_ it: NSMenuItem) -> Bool {
         guard it.action == #selector(runEgg(_:)) else { return true }
         switch it.tag {
-        case 4: return pet.muzeSkocit(.podzim)
-        case 5: return pet.muzeSkocit(.zima)
+        case 4, 6: return pet.vSezone(.podzim)
+        case 5, 7: return pet.vSezone(.zima)
         default: return true
         }
     }

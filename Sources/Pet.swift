@@ -8,6 +8,7 @@ enum Act {
     case snuffle    // čmuchá po zemi: hlava dole, pomalu sem a tam
     case beg        // panáčkuje (prosí o pomazlení nebo pamlsek)
     case hromada    // skočí do hromádky listí (podzim) nebo do závěje (zima)
+    case chyta      // chňape po padajícím listí (podzim) nebo po vločkách (zima)
 }
 
 struct Input {
@@ -132,6 +133,9 @@ final class Pet {
     private var hromadaDen = -1
     /// Za kolik vteřin bdění zajde k hromádce (první skok po 15–45 minutách, pak 2–3× za den).
     var dalsiHromada: CGFloat = CGFloat.random(in: 900...2700)
+    var padaniDruh: Obdobi = .podzim
+    var chytaMoving = false
+    var chytaSkok: CGFloat = 0          // jak dlouho ještě je ve výskoku (chňapnutí)
 
     init(cfg: Config, env: Env, fx: Effects) {
         self.cfg = cfg
@@ -265,6 +269,7 @@ final class Pet {
         case .toBed: return toBedMoving ? max(base * 2, 90 * s) : 0
         case .snuffle: return snuffleMoving ? base * 0.45 : 0
         case .hromada: return hromadaMoving ? max(base * 1.6, 70 * s) : 0      // k hromádce spěchá
+        case .chyta: return chytaMoving ? max(base * 2.2, 100 * s) : 0
         case .fetch: return fetchMoving ? max(base * 2.4, 100 * s) : 0
         case .fetchBall: return ballMoving ? (ballPhase == 0 ? max(base * 2.6, 140 * s) : max(base * 1.6, 70 * s)) : 0
         default: return 0
@@ -414,6 +419,8 @@ final class Pet {
             toBedLogic(dt)
         case .hromada:
             hromadaLogic(dt)
+        case .chyta:
+            chytaLogic(dt)
         case .fetch:
             fetchLogic(dt)
         case .fetchBall:
@@ -757,11 +764,16 @@ final class Pet {
 
     func startEgg(_ which: Int?) {
         guard mode == .ground else { return }
-        // 0 balónky, 1 veverka, 2 déšť pamlsků
-        let n = which ?? Int.random(in: 0..<3)
+        // 0 balónky, 1 veverka, 2 déšť pamlsků, 3 padání listí (jen na podzim), 4 sněžení (jen v zimě)
+        var moznosti = [0, 1, 2]
+        if vSezone(.podzim) { moznosti.append(3) }
+        if vSezone(.zima) { moznosti.append(4) }
+        let n = which ?? moznosti.randomElement()!
         switch n {
         case 0: startBalloons()
         case 1: setAct(.squirrel, 30)
+        case 3: startPadani(.podzim)
+        case 4: startPadani(.zima)
         default: rainTreats()
         }
     }
@@ -916,12 +928,61 @@ final class Pet {
         hromadaMoving = false
     }
 
-    /// Nabídka Překvapení: skok do listí jen na podzim, do závěje jen v zimě (jinak je položka šedá).
-    func muzeSkocit(_ o: Obdobi) -> Bool { obdobi == o }
+    /// Je teď toto roční období? Listí jen na podzim, sníh jen v zimě (jinak je položka v nabídce šedá).
+    func vSezone(_ o: Obdobi) -> Bool { obdobi == o }
+
+    /// Padání listí (podzim) nebo sněžení (zima): sype se z horního kraje obrazovky nad Dock
+    /// a Julie po lístcích a vločkách chňape.
+    func startPadani(_ o: Obdobi) {
+        guard vSezone(o), mode == .ground, surfaceId == 0 else { return }
+        fx.hideSquirrel()
+        padaniDruh = o
+        fx.zacniPadani(o, odY: env.ceilY)
+        setAct(.chyta, 999)
+        chytaMoving = false
+        chytaSkok = 0
+    }
+
+    private func chytaLogic(_ dt: CGFloat) {
+        let floor = surfaceTop() ?? env.floorY
+        chytaMoving = false
+        if chytaSkok > 0 { chytaSkok -= dt; return }
+        // nejbližší lístek nebo vločka, která už je nízko nad Dockem a ještě nedopadla
+        var cil: Vlocka?
+        var nejbliz = CGFloat.infinity
+        for v in fx.padajici where !v.landed && v.pos.y < floor + 260 * s {
+            let d = abs(v.pos.x - pos.x)
+            if d < nejbliz { nejbliz = d; cil = v }
+        }
+        guard let v = cil else {
+            // dopadalo: po sněhu se otřepe, po listí radostně poskočí
+            if !fx.padaniBezi && actT > 2 { setAct(padaniDruh == .zima ? .shake : .happy, padaniDruh == .zima ? 0.75 : 1.4) }
+            if actT > 60 { setAct(.sit, 1) }
+            return
+        }
+        let side: CGFloat = v.pos.x > pos.x ? 1 : -1
+        let (lo, hi) = bounds()
+        let tlama = (half - 3) * pixel
+        let target = min(hi, max(lo, v.pos.x - side * tlama))
+        if abs(target - pos.x) > 3 * pixel {
+            walkDir = target > pos.x ? 1 : -1
+            chytaMoving = true
+        } else {
+            facing = side
+        }
+        // lístek je u tlamy, kousek nad hlavou: vyskočí a chňapne
+        let dosah = floor + (DogRenderer.standHeight + 18) * pixel
+        if abs(v.pos.x - (pos.x + facing * tlama)) < 8 * pixel && v.pos.y < dosah && v.pos.y > floor + 6 * pixel {
+            chytaSkok = 0.42
+            speedNow = 0
+            fx.chytni(v)
+        }
+        if actT > 60 { setAct(.sit, 1) }
+    }
 
     /// Nabídka Překvapení: skočí do listí nebo do závěje hned (když je to roční období).
     func ukazHromadu(_ o: Obdobi) {
-        guard muzeSkocit(o) else { return }
+        guard vSezone(o) else { return }
         ukazkaObdobi = o
         startHromada()
     }
@@ -1191,7 +1252,7 @@ final class Pet {
         guard mode == .ground else { return }
         // Claude skončil nebo čeká na tebe a Julie spí v pelíšku (poslal ji tam dlouhou prací): vstane
         if (tok == "done" || tok == "notify") && act == .inBed && !bedUntilClick { leaveBed(); return }
-        let busy: [Act] = [.dig, .inBed, .toBed, .outOfBed, .fetch, .fetchBall, .squirrel, .sausage, .petted, .shake, .dizzy, .beg, .hromada]
+        let busy: [Act] = [.dig, .inBed, .toBed, .outOfBed, .fetch, .fetchBall, .squirrel, .sausage, .petted, .shake, .dizzy, .beg, .hromada, .chyta]
         if busy.contains(act) { return }
         let important = tok == "notify" || tok == "done"
         if !important && clock - lastClaudeReact < 6 { return }
@@ -1895,6 +1956,12 @@ final class Pet {
             return Int((t - 0.7) / 0.22) % 2 == 0 ? "valeni_zada0" : "valeni_zada1"
         case .inBed:
             return curl(awake: t < 1.6)
+        case .chyta:
+            if chytaSkok > 0 {                       // výskok za lístkem / vločkou
+                yOff = sin((1 - chytaSkok / 0.42) * .pi) * 9 * pixel
+                return "skace"
+            }
+            return moving ? walkFrame : "stoji"
         case .hromada:
             if hromadaFaze == 5 {                    // otřepání jako po noře
                 let u = min(1, hromadaT / 0.9)

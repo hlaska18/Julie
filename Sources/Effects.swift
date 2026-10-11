@@ -89,6 +89,24 @@ final class Sausage {
     }
 }
 
+/// Padající lístek nebo vločka (padání listí na podzim, sněžení v zimě).
+final class Vlocka {
+    let layer: CALayer
+    var pos: CGPoint
+    let rychlost: CGFloat          // jak rychle padá (body za vteřinu)
+    let houpani: CGFloat           // jak daleko se houpe do stran
+    var faze: CGFloat
+    var landed = false
+    var age: CGFloat = 0
+    var zmizi: CGFloat = .infinity // kdy (podle age) zmizí ležící
+    var otoceni: CGFloat = 0
+    let toci: Bool                 // lístek se při pádu převrací, vločka ne
+    init(layer: CALayer, pos: CGPoint, rychlost: CGFloat, houpani: CGFloat, toci: Bool) {
+        self.layer = layer; self.pos = pos; self.rychlost = rychlost; self.houpani = houpani; self.toci = toci
+        faze = CGFloat.random(in: 0...(2 * .pi))
+    }
+}
+
 final class Effects {
     var treatRange: ClosedRange<CGFloat>?   // pamlsky smí dopadnout jen nad Dock
     let root = CALayer()
@@ -215,6 +233,129 @@ final class Effects {
             over.addSublayer(l)
             let v = CGPoint(x: CGFloat.random(in: -90...90) * k, y: CGFloat.random(in: rychlost) * k)
             particles.append(Particle(layer: l, vel: v, life: CGFloat.random(in: zivot), gravity: gravitace * k))
+        }
+    }
+
+    // MARK: padání listí a sněžení
+
+    private(set) var padajici: [Vlocka] = []
+    private var padaniDruh: Obdobi = .podzim
+    private var padaniZbyva: CGFloat = 0
+    private var padaniDalsi: CGFloat = 0
+    private var padaniOdY: CGFloat = 0
+    private var glyfy: [String: CGImage] = [:]
+
+    /// Padá ještě něco (nebo se ještě sype)? Ležící lístky se nepočítají.
+    var padaniBezi: Bool { padaniZbyva > 0 || padajici.contains { !$0.landed } }
+
+    /// Začne padat listí (podzim) nebo sníh (zima) z horního kraje obrazovky nad Dock.
+    func zacniPadani(_ druh: Obdobi, odY: CGFloat, trvani: CGFloat = 10) {
+        padaniDruh = druh
+        padaniZbyva = trvani
+        padaniDalsi = 0
+        padaniOdY = odY
+    }
+
+    /// Pixelový lístek (4 × 4, s tmavou stopkou) nebo vločka (3 × 3 křížek, modrošedé okraje
+    /// jsou vidět i na bílém pozadí; malá vločka 2 × 2).
+    private func glyf(_ klic: String) -> CGImage? {
+        if let g = glyfy[klic] { return g }
+        let tvar: [String]
+        var barva = listiBarvy[0]
+        switch klic {
+        case "vlocka": tvar = [".b.", "bwb", ".b."]
+        case "vlocka2": tvar = ["wb", "bb"]
+        default:
+            barva = listiBarvy[Int(String(klic.last!)) ?? 0]
+            tvar = klic.hasPrefix("list1") ? ["XX.", "XXX", ".XS"] : ["..XX", ".XXX", "XXX.", "S..."]
+        }
+        let w = tvar[0].count, h = tvar.count
+        guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                                  space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        for (r, radek) in tvar.enumerated() {
+            for (x, ch) in radek.enumerated() {
+                switch ch {
+                case "X": ctx.setFillColor(barva)
+                case "S": ctx.setFillColor(dirtColors[2])
+                case "w": ctx.setFillColor(snihBarvy[0])
+                case "b": ctx.setFillColor(snihBarvy[2])
+                default: continue
+                }
+                ctx.fill(CGRect(x: x, y: h - 1 - r, width: 1, height: 1))
+            }
+        }
+        glyfy[klic] = ctx.makeImage()
+        return glyfy[klic]
+    }
+
+    private func pridejVlocku() {
+        guard let r = treatRange else { return }
+        let k = px / 2
+        let listi = padaniDruh == .podzim
+        let klic = listi ? "list\(Int.random(in: 0...1))_\(Int.random(in: 0..<listiBarvy.count))"
+                         : (Int.random(in: 0..<3) == 0 ? "vlocka" : "vlocka2")
+        guard let img = glyf(klic) else { return }
+        let l = CALayer()
+        l.contents = img
+        l.magnificationFilter = .nearest
+        l.bounds = CGRect(x: 0, y: 0, width: CGFloat(img.width) * px, height: CGFloat(img.height) * px)
+        over.addSublayer(l)
+        let v = Vlocka(layer: l, pos: CGPoint(x: CGFloat.random(in: r), y: padaniOdY + 10),
+                       rychlost: (listi ? CGFloat.random(in: 85...130) : CGFloat.random(in: 55...90)) * k,
+                       houpani: (listi ? CGFloat.random(in: 18...34) : CGFloat.random(in: 6...14)) * k, toci: listi)
+        padajici.append(v)
+    }
+
+    /// Julie chňapla po lístku nebo vločce: zmizí (vločka roztaje), lístek se ještě rozprskne.
+    private(set) var chyceno = 0
+    func chytni(_ v: Vlocka) {
+        chyceno += 1
+        if v.toci { listi(at: v.pos, px: px, kolik: 2) }
+        v.layer.removeFromSuperlayer()
+        padajici.removeAll { $0 === v }
+    }
+
+    private func updatePadani(_ dt: CGFloat, floorY: CGFloat) {
+        if padaniZbyva > 0 {
+            padaniZbyva -= dt
+            padaniDalsi -= dt
+            while padaniDalsi <= 0 {
+                pridejVlocku()
+                padaniDalsi += padaniDruh == .podzim ? CGFloat.random(in: 0.25...0.5) : CGFloat.random(in: 0.06...0.14)
+            }
+        }
+        for v in padajici {
+            v.age += dt
+            if !v.landed {
+                // padá a houpe se do stran; lístek se při tom převrací (po čtvrtotáčkách, pixely zůstanou ostré)
+                v.faze += dt * (v.toci ? 2.2 : 1.4)
+                v.pos.y -= v.rychlost * dt
+                v.pos.x += cos(v.faze) * v.houpani * dt * 2
+                if let r = treatRange { v.pos.x = min(r.upperBound, max(r.lowerBound, v.pos.x)) }
+                let dole = floorY + v.layer.bounds.height / 2 - px
+                if v.pos.y <= dole {
+                    v.pos.y = dole
+                    v.landed = true
+                    v.otoceni = 0
+                    // chvíli leží, pak zmizí (sníh roztaje rychleji)
+                    let lezi: CGFloat = v.toci ? CGFloat.random(in: 4...8) : CGFloat.random(in: 1.5...3)
+                    v.zmizi = v.age + lezi + 1.2
+                    let fade = CABasicAnimation(keyPath: "opacity")
+                    fade.fromValue = 1; fade.toValue = 0
+                    fade.beginTime = CACurrentMediaTime() + CFTimeInterval(lezi); fade.duration = 1.2
+                    fade.fillMode = .forwards; fade.isRemovedOnCompletion = false
+                    v.layer.add(fade, forKey: "fade")
+                } else if v.toci {
+                    v.otoceni = (v.faze / (.pi / 2)).rounded(.down)
+                }
+            }
+            v.layer.setAffineTransform(CGAffineTransform(rotationAngle: v.otoceni * .pi / 2))
+            v.layer.position = CGPoint(x: (v.pos.x / px).rounded() * px, y: (v.pos.y / px).rounded() * px)
+        }
+        padajici.removeAll { v in
+            if v.age > v.zmizi || v.age > 60 { v.layer.removeFromSuperlayer(); return true }
+            return false
         }
     }
 
@@ -728,10 +869,11 @@ final class Effects {
             if s.age > 60 { s.layer.removeFromSuperlayer() }
         }
         sausages.removeAll { $0.age > 60 }
+        if padaniZbyva > 0 || !padajici.isEmpty { updatePadani(dt, floorY: floorY) }
     }
 
     /// Děje se v efektech něco, co potřebuje plynulý pohyb? (letící hroudy, padající pamlsky)
-    var isBusy: Bool { !particles.isEmpty || sausages.contains { !$0.landed } }
+    var isBusy: Bool { !particles.isEmpty || sausages.contains { !$0.landed } || padaniBezi }
 
     /// Po přepnutí monitoru s jinou hustotou pixelů.
     func setScale(_ sc: CGFloat) {

@@ -9,7 +9,7 @@ import UniformTypeIdentifiers
 /// na ploše. Vrstvy kreslí CARenderer do textury Metalu (bez obrazovky a bez nahrávání obrazovky);
 /// scéna běží v reálném čase, aby animace vrstev (štěkání, hlína, srdíčka) seděly s pohybem Julie.
 /// Dock je jen obecný pruh s barevnými čtverečky (žádné skutečné ikony).
-let ukazkoveSceny = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka", "hlazeni", "listi", "zavej"]
+let ukazkoveSceny = ["chuze", "nora", "pamlsky", "micek", "pelisek", "padak", "veverka", "hlazeni", "listi", "zavej", "padlisti", "snezi"]
 
 func natocUkazku(_ scena: String, do slozka: String) -> Bool {
     _ = NSApplication.shared
@@ -126,6 +126,9 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
         pet.facing = -1
         kurzor.isHidden = false
         mys = CGPoint(x: dockL + 90, y: floorY + 95)
+    case "padlisti", "snezi":
+        pet.simMesic = scena == "padlisti" ? 10 : 1     // natáčí se kdykoli, ne jen v sezóně
+        pet.pos.x = (dockL + dockR) / 2
     case "listi", "zavej":
         pet.simMesic = scena == "listi" ? 10 : 1        // natáčí se kdykoli, ne jen v sezóně
         pet.pos.x = dockL + 110
@@ -142,7 +145,7 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
     var predchoziMys = mys
     let mysStart = mys
 
-    if scena == "pamlsky" || scena == "listi" || scena == "zavej" { konec = 30 }
+    if ["pamlsky", "listi", "zavej", "padlisti", "snezi"].contains(scena) { konec = 30 }
     let fps: CGFloat = 25, dt = 1 / fps
     var t: CGFloat = 0
     var snimek = 0
@@ -181,6 +184,9 @@ func natocUkazku(_ scena: String, do slozka: String) -> Bool {
             if udalost == 3 && [.stretch, .walk, .sit].contains(pet.act) && dobeh < 0 { dobeh = t }
         case "padak":
             if pet.mode == .ground && ![.shake, .dizzy].contains(pet.act) && dobeh < 0 { dobeh = t }
+        case "padlisti", "snezi":
+            if udalost == 0 && t >= 0.3 { pet.startPadani(scena == "padlisti" ? .podzim : .zima); udalost = 1 }
+            if udalost == 1 && pet.act != .chyta && dobeh < 0 { dobeh = t }
         case "listi", "zavej":
             if udalost == 0 && t >= 0.4 { pet.ukazHromadu(scena == "listi" ? .podzim : .zima); udalost = 1 }
             if udalost == 1 && pet.act != .hromada && dobeh < 0 { dobeh = t }
