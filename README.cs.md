@@ -8,7 +8,7 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
 (stačí Command Line Tools). Julie nemluví, nemá bubliny. Nabídka je v pěti jazycích
 (čeština, angličtina, němčina, slovenština, polština; podle systému, přepnout v Nastavení).
 
-**[Stáhnout Julii pro Mac (DMG, 0,7 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
+**[Stáhnout Julii pro Mac (DMG, 0,8 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
 · [web](https://hlaska18.github.io/Julie/cs/) · [všechna vydání](https://github.com/hlaska18/Julie/releases)
 
 ![Julie jde po Docku, čuchá, štěká, sedne si a protáhne se](docs/ukazky/chuze.gif)
@@ -20,7 +20,7 @@ Desktopový mazlíček podle Clawda, ale jezevčík – Karlova fenka Julie. Swi
    (nebo v Terminálu `xattr -dr com.apple.quarantine /Applications/Julie.app`).
 3. Úvodní okno ukáže ovládání a nabídne spouštění po přihlášení.
 
-Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0.2` → `dist/Julie.dmg` a `dist/Julie.zip`
+Vyžaduje macOS 12+, Apple Silicon i Intel. Vydání: `./release.sh 1.0.3` → `dist/Julie.dmg` a `dist/Julie.zip`
 (univerzální aplikace; před zabalením proběhne samotest; disk v DMG má ikonu Julie v krabici z
 `art/dmg_ikona.png`, kreslí ji `art/dmg_ikona.py`). Soubory mají **stálé názvy**, takže odkazy
 `releases/latest/download/Julie.dmg` na webu i v README se nemění. Při novém vydání na webu
@@ -74,7 +74,7 @@ hrabe noru (očichá, hrabe – tlapky se střídají, hlína letí dozadu na ku
 napřed a vyleze jinde přímo z díry). Pelíšek vedle Docku (spí v klubíčku), pamlsky, míček (aport),
 veverka (sprint s vyplazeným jazykem), balónky, hlazení, denní režim. Roční období jako u skutečné
 Julie: na podzim leží na Docku hromádka listí a Julie do ní párkrát za den skočí, v zimě se zanoří
-do závěje, až kouká jen vrtící se ocas; na jaře víc chodí, v létě v poledne víc leží (na jižní
+do závěje, až kouká jen vrtící se ocas; občas padá listí nebo sníh a Julie po něm chňape; na jaře víc chodí, v létě v poledne víc leží (na jižní
 polokouli obráceně; vypíná se s darebáctvím). Po návratu k Macu (odemčení
 nebo probuzení po aspoň 15 minutách) přivítá: štěkne, přiběhne pod kurzor a zapanáčkuje (vypnout
 v Nastavení „Vítat mě po návratu k Macu“).

@@ -17,7 +17,7 @@ KOREN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CIL = os.path.join(KOREN, "docs", "ukazky")
 FPS = 25
 # klidový snímek: kolikátá vteřina scény
-KLID = {"chuze": 3.9, "nora": 2.0, "pamlsky": 3.0, "micek": 2.6, "pelisek": 4.0, "padak": 1.5, "veverka": 2.2, "hlazeni": 3.0, "listi": 6.0, "zavej": 7.0, "padlisti": 9.0, "snezi": 9.0}
+KLID = {"chuze": 3.9, "nora": 2.0, "pamlsky": 3.0, "micek": 2.6, "pelisek": 4.0, "padak": 1.5, "veverka": 2.2, "hlazeni": 3.0, "listi": 4.6, "zavej": 5.2, "padlisti": 9.0, "snezi": 9.0}
 
 
 def gif(sc, slozka):

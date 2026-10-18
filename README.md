@@ -10,7 +10,7 @@ on top of your Dock. She is modelled on a real dog called Julie. Inspired by
 
 She never talks – no speech bubbles, just a dog being a dog.
 
-**[Download Julie for Mac (DMG, 0.7 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
+**[Download Julie for Mac (DMG, 0.8 MB)](https://github.com/hlaska18/Julie/releases/latest/download/Julie.dmg)**
 · [website](https://hlaska18.github.io/Julie/) · [all releases](https://github.com/hlaska18/Julie/releases)
 
 ![Julie walks along the Dock, sniffs, barks, sits and stretches](docs/ukazky/chuze.gif)
@@ -36,6 +36,7 @@ More animations (burrow, treats, fetch, bed, parachute, squirrel) are on the [we
 - day mode: sleepier in the evening and at night, livelier in the morning
 - seasons, like the real Julie: in autumn a pile of leaves lies on the Dock and she jumps into it
   a few times a day; in winter she dives into a snowdrift until only her wagging tail sticks out;
+  now and then leaves or snowflakes drift down and she snaps at them;
   more walks in spring, more lying around at midday in summer (southern hemisphere: the other way round)
 - optional: reacts to [Claude Code](https://claude.com/claude-code) (sits while it thinks, digs while
   it runs commands, barks when it is waiting for you, jumps when it is done)
@@ -77,7 +78,7 @@ Julie falls back to checking window sizes.
 Needs only the Command Line Tools (`xcode-select --install`), Python 3 with Pillow for the art scripts.
 
     ./build.sh          # builds and installs into ~/Applications
-    ./release.sh 1.0.2  # universal app + dist/Julie.dmg and Julie.zip (runs the self-test first)
+    ./release.sh 1.0.3  # universal app + dist/Julie.dmg and Julie.zip (runs the self-test first)
     ~/Applications/Julie.app/Contents/MacOS/Julie --test   # self-test without a screen
     python3 tools/ukazky.py     # records the GIFs in docs/ukazky from the real app (no screen recording)
     python3 tools/web_obrazky.py   # icons and sharing images for the website in docs/
